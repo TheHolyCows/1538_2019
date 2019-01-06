@@ -1,0 +1,4 @@
+See file:///Users/hchau/git/1538_2019/build/tmp/linkFrcUserProgramReleaseExecutable/output.txt for all output for linkFrcUserProgramReleaseExecutable.
+linking frcUserProgram successful.
+
+Finished linkFrcUserProgramReleaseExecutable, see full log file:///Users/hchau/git/1538_2019/build/tmp/linkFrcUserProgramReleaseExecutable/output.txt.
