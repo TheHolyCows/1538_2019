@@ -1,6 +1,9 @@
 #include "CowRobot.h"
 #include "CowBase.h"
 #include <iostream>
+#include "frc/smartdashboard/Smartdashboard.h"
+#include <networktables/NetworkTable.h>
+#include <networktables/NetworkTableInstance.h>
 
 CowRobot::CowRobot()
 {    
@@ -54,6 +57,8 @@ CowRobot::CowRobot()
     m_AccelY_LPF = new CowLib::CowLPF(CONSTANT("TIP_LPF"));
     m_TipTime = 0;
     m_Tipping = false;
+    //limeLight = NetworkTable::GetTable("limelight");
+    m_Limelight = nt::NetworkTableInstance::GetDefault().GetTable("limelight");
 }
 
 void CowRobot::Reset()
@@ -117,6 +122,10 @@ void CowRobot::handle()
         //          << m_DriveEncoder->Get() << " "
         //      << m_Gyro->GetAngle() << std::endl;std::cout << "Heading: " << m_Gyro->GetAngle() << " " << m_DriveEncoder->GetDistance() << std::endl;
 
+        std::cout << "tv: " << double(m_Limelight->GetNumber("tv",0.0)) << std::endl;
+        std::cout << "tx: " << double(m_Limelight->GetNumber("tx",0.0)) << std::endl;
+        std::cout << "ty: " << double(m_Limelight->GetNumber("ty",0.0)) << std::endl;
+        std::cout << "ta: " << double(m_Limelight->GetNumber("ta",0.0)) << std::endl;
     }
 
     //std::cout << "start time: " << m_StartTime << " match time: " << m_MatchTime << std::endl;

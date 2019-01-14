@@ -16,6 +16,8 @@
 #include "CowGyro.h"
 #include "CowLib/CowMotorController.h"
 #include "CowLib/CowLPF.h"
+#include "frc/smartdashboard/Smartdashboard.h"
+#include "networktables/NetworkTable.h"
 
 
 class CowRobot
@@ -62,6 +64,7 @@ private:
 
     float m_TipTime;
     bool m_Tipping;
+    std::shared_ptr<nt::NetworkTable> m_Limelight;
 
 public:
     CowRobot();
@@ -78,6 +81,11 @@ public:
     void DriveSpeedTurn(float speed, float turn, bool quickTurn);
     void DriveLeftRight(float leftDriveValue, float rightDriveValue);
     bool TurnToHeading(double heading);
+
+    std::shared_ptr<nt::NetworkTable> GetLimelight()
+    {
+        return m_Limelight;
+    }
     void QuickTurn(float turn);
     
     void StartTime();

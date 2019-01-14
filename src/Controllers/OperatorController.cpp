@@ -16,9 +16,18 @@ void OperatorController::handle(CowRobot *bot)
     }
     else
     {
-        bot->DriveSpeedTurn(m_CB->GetDriveStickY(),
-                            m_CB->GetSteeringX(),
-                            m_CB->GetSteeringButton(FAST_TURN));
+        if(m_CB->GetSteeringButton(3))
+        {
+            bot->DriveSpeedTurn(m_CB->GetDriveStickY(),
+                                (bot->GetLimelight()->GetNumber("tx",0.0)*CONSTANT("LIMELIGHT_X_KP")),
+                                1);
+        }
+        else
+        { 
+            bot->DriveSpeedTurn(m_CB->GetDriveStickY(),
+                                m_CB->GetSteeringX(),
+                                m_CB->GetSteeringButton(FAST_TURN));
+        }
     }
 
 }
