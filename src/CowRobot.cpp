@@ -36,6 +36,12 @@ CowRobot::CowRobot()
 
     m_DriveEncoder = m_DriveEncoderRight;
 
+    m_Elevator = new Elevator (6, 7, MXP_QEI_5_A, MXP_QEI_5_B);
+    m_Arm = new Arm(3, CONSTANT("ARM_UP"), CONSTANT("ARM_DOWN"));
+    m_Intake = new Intake(4);
+    m_Wrist = new Arm(5, 0, 0);
+
+
     m_MatchTime = 0;
     m_StartTime = 0;
 
@@ -130,6 +136,10 @@ void CowRobot::handle()
 
     //std::cout << "start time: " << m_StartTime << " match time: " << m_MatchTime << std::endl;
 
+    m_Elevator->handle();
+    m_Arm->handle();
+    m_Intake->handle();
+    m_Wrist->handle();
 
     frc::SmartDashboard::PutNumber("Drive distance", GetDriveDistance());
     frc::SmartDashboard::PutNumber("lEnc", m_DriveEncoderLeft->GetDistance());

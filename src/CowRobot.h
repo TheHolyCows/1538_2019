@@ -18,6 +18,9 @@
 #include "CowLib/CowLPF.h"
 #include "frc/smartdashboard/Smartdashboard.h"
 #include "networktables/NetworkTable.h"
+#include "Subsystems/Elevator.h"
+#include "Subsystems/Arm.h"
+#include "Subsystems/Intake.h"
 
 
 class CowRobot
@@ -45,6 +48,11 @@ private:
 
     CowLib::CowAlphaNum *m_LEDDisplay;
     CowLib::CowLogger *m_WebServer;
+
+    Elevator *m_Elevator;
+    Arm *m_Arm;
+    Arm *m_Wrist;
+    Intake *m_Intake;
 
     float m_LeftDriveValue;
     float m_RightDriveValue;
@@ -110,6 +118,24 @@ public:
     frc::Encoder *GetEncoder()
     {
         return m_DriveEncoder;
+    }
+
+    Elevator* GetElevator()
+    {
+        return m_Elevator;
+    }
+    Arm* GetArm()
+    {
+        return m_Arm;
+    }
+
+    Arm* GetWrist()
+    {
+        return m_Wrist;
+    }
+    Intake* GetIntake()
+    {
+        return m_Intake;
     }
 
     void UseLeftEncoder()
