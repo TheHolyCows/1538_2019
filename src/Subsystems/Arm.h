@@ -12,13 +12,14 @@
 #include "../CowConstants.h"
 #include <frc/WPILib.h>
 #include <frc/Timer.h>
+#include <string>
 
 
 
 class Arm 
 {
 public:
-	Arm(int motorController, double upLimit, double downLimit);
+	Arm(int motorController, double upLimit, double downLimit, std::string name, bool changeDirection);
 	void SetPosition(float position);
 	float GetSetpoint();
 	//void DisabledCalibration();
@@ -33,6 +34,7 @@ private:
 	float m_Position;
 	float m_UpLimit;
 	float m_DownLimit;
+	std::string m_Name;
 };
 
 #endif /* SRC_SUBSYSTEMS_ARM_H_ */

@@ -37,10 +37,12 @@ CowRobot::CowRobot()
     m_DriveEncoder = m_DriveEncoderRight;
 
     m_Elevator = new Elevator (6, 7, MXP_QEI_5_A, MXP_QEI_5_B);
-    m_Arm = new Arm(3, CONSTANT("ARM_UP"), CONSTANT("ARM_DOWN"));
-    m_Intake = new Intake(4);
-    m_Wrist = new Arm(5, 0, 0);
+    m_Arm = new Arm(3, CONSTANT("ARM_UP_LIMIT"), CONSTANT("ARM_DOWN"), "ARM", false);
+    m_Intake = new Intake(5);
+    m_Wrist = new Arm(4, CONSTANT("WRIST_UP"), CONSTANT("WRIST_DOWN"), "WRIST", true);
 
+    m_DetectLoadingStation = false;
+    m_LoadDetect_LPF = new CowLib::CowLPF(CONSTANT("LOAD_DETECT_LPF"));
 
     m_MatchTime = 0;
     m_StartTime = 0;
@@ -78,6 +80,9 @@ void CowRobot::Reset()
     m_RightDriveValue = 0;
     m_MatchTime = 0;
     m_AccelY_LPF->UpdateBeta(CONSTANT("TIP_LPF"));
+    m_LoadDetect_LPF->UpdateBeta(CONSTANT("LOAD_DETECT_LPF"));
+    m_Wrist->ResetConstants(CONSTANT("WRIST_UP"), CONSTANT("WRIST_DOWN"));
+    m_Arm->ResetConstants(CONSTANT("ARM_UP_LIMIT"), CONSTANT("ARM_DOWN"));
 }
 
 void CowRobot::SetController(GenericController *controller)
@@ -134,8 +139,21 @@ void CowRobot::handle()
         std::cout << "ta: " << double(m_Limelight->GetNumber("ta",0.0)) << std::endl;
     }
 
+    double LoadingStationLPF = m_LoadDetect_LPF->Calculate(0);
     //std::cout << "start time: " << m_StartTime << " match time: " << m_MatchTime << std::endl;
-
+    if (m_DetectLoadingStation)
+    {
+        if (LoadingStationLPF > CONSTANT("LS_DETECT_THRESHOLD"))
+        {
+            m_Intake->SetSpeed(0);
+            m_Elevator->SetPosition(CONSTANT("ELEVATOR_LOADING_STATION_FINISH"));
+            if (m_Elevator->AtTarget())
+            {
+                m_DetectLoadingStation = false;
+            }
+        }
+        
+    }
     m_Elevator->handle();
     m_Arm->handle();
     m_Intake->handle();

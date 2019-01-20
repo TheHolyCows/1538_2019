@@ -54,6 +54,8 @@ private:
     Arm *m_Wrist;
     Intake *m_Intake;
 
+    bool m_DetectLoadingStation;
+
     float m_LeftDriveValue;
     float m_RightDriveValue;
 
@@ -69,6 +71,7 @@ private:
     frc::Accelerometer *m_Accelerometer;
 
     CowLib::CowLPF *m_AccelY_LPF;
+    CowLib::CowLPF *m_LoadDetect_LPF;
 
     float m_TipTime;
     bool m_Tipping;
@@ -89,6 +92,14 @@ public:
     void DriveSpeedTurn(float speed, float turn, bool quickTurn);
     void DriveLeftRight(float leftDriveValue, float rightDriveValue);
     bool TurnToHeading(double heading);
+    void DetectLoadingStation()
+    {
+        m_DetectLoadingStation = true;
+    }
+    void ResetLoadingStation()
+    {
+        m_DetectLoadingStation = false;
+    }
 
     std::shared_ptr<nt::NetworkTable> GetLimelight()
     {

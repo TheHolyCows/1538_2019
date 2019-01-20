@@ -21,6 +21,7 @@ public:
 	void SetPosition(float position);
 	float GetDistance();
 	void ResetConstants();
+	bool AtTarget();
 private:
 	CowLib::CowMotorController *m_MotorRight;
 	CowLib::CowMotorController *m_MotorLeft;

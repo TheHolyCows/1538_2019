@@ -97,6 +97,10 @@ namespace CowLib
     {
         m_MotorController->Set(TranslateControlMode(GetControlMode()), value);
     }
+    void CowMotorController::SetInverted()
+    {
+        m_MotorController->SetInverted(true);
+    }
     TalonSRX *CowMotorController::GetInternalMotor()
     {
     		return m_MotorController;

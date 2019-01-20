@@ -44,14 +44,24 @@ void OperatorController::handle(CowRobot *bot)
         //go to ground
         bot->GetElevator()->SetPosition(CONSTANT("ELEVATOR_GROUND"));
     }
-    if(m_CB->GetOperatorButton(6))
+    if(m_CB->GetOperatorButton(2))
     {
     	bot->GetArm()->SetPosition(CONSTANT("ARM_DOWN"));
 
     }
-    if(m_CB->GetOperatorButton(9))
+    if(m_CB->GetOperatorButton(1))
     {
     	bot->GetArm()->SetPosition(CONSTANT("ARM_UP"));
+    }
+     if(m_CB->GetOperatorButton(3))
+    {
+    	bot->GetArm()->SetPosition(CONSTANT("ARM_LOADING_STATION"));
+        bot->GetWrist()->SetPosition(CONSTANT("WRIST_LOADING_STATION"));
+        bot->GetElevator()->SetPosition(CONSTANT("ELEVATOR_LOADING_STATION"));
+    }
+    if(m_CB->GetSteeringButton(12))
+    {
+        bot->ResetLoadingStation();
     }
     if(m_CB->GetOperatorButton(7))
     {
@@ -65,8 +75,30 @@ void OperatorController::handle(CowRobot *bot)
     {
         bot->GetIntake()->SetSpeed(0);
     }
-    float armJoystickDeadband = CowLib::Deadband(m_CB->GetOperatorGamepadAxis(1), 0.2);
+
+    if(m_CB->GetOperatorButton(6))
+    {
+        bot->GetElevator()->SetPosition(CONSTANT("HATCH_POS_ELEVATOR"));
+        bot->GetWrist()->SetPosition(CONSTANT("HATCH_POS_WRIST"));
+        bot->GetArm()->SetPosition(CONSTANT("HATCH_POS_ARM"));
+    }
+
+    if(m_CB->GetOperatorButton(9))
+    {
+        bot->GetElevator()->SetPosition(CONSTANT("BALL_POS_ELEVATOR"));
+        bot->GetWrist()->SetPosition(CONSTANT("BALL_POS_WRIST"));
+        bot->GetArm()->SetPosition(CONSTANT("BALL_POS_ARM"));
+    }
+    float wristJoystickDeadband = CowLib::Deadband(m_CB->GetOperatorGamepadAxis(1), 0.2);
+    float manualWristPosition = bot->GetWrist()->GetSetpoint() + (wristJoystickDeadband * 28);
+    bot->GetWrist()->SetPosition(manualWristPosition);
+
+    float armJoystickDeadband = CowLib::Deadband(m_CB->GetOperatorGamepadAxis(0), 0.2);
     float manualArmPosition = bot->GetArm()->GetSetpoint() + (armJoystickDeadband * 28);
-    bot->GetWrist()->SetPosition(manualArmPosition);
+    bot->GetArm()->SetPosition(manualArmPosition);
+
+    //float elevatorJoystickDeadband = CowLib::Deadband(m_CB->GetDriveAxis(0), 0.2);
+    //float manualElevatorPosition = bot->GetElevator()->GetDistance() + (elevatorJoystickDeadband * 0.5);
+    //bot->GetElevator()->SetPosition(manualElevatorPosition);
 }
 

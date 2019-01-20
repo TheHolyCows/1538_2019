@@ -93,7 +93,7 @@ void CowBase::DisabledPeriodic()
             /*
              * POSITION FIRST_OWNERSHIP SECOND_OWNERSHIP DRIVE
              */
-            AutoModes::GetInstance()->NextMode();
+            //AutoModes::GetInstance()->NextMode();
         }
     }
 //    m_Bot->PrintToDS();

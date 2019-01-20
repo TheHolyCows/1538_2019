@@ -10,7 +10,7 @@
 #include <iostream>
 #include <frc/Timer.h>
 
-Arm::Arm(int motorController, double upLimit, double downLimit)
+Arm::Arm(int motorController, double upLimit, double downLimit, std::string name, bool changeDirection)
 {
 	m_Motor = new CowLib::CowMotorController(motorController);
 	m_Motor->SetControlMode(CowLib::CowMotorController::POSITION);
@@ -20,6 +20,13 @@ Arm::Arm(int motorController, double upLimit, double downLimit)
 
 	m_UpLimit = upLimit;
 	m_DownLimit = downLimit;
+
+	m_Name = name;
+
+	if(changeDirection)
+	{
+		m_Motor->SetInverted();
+	}
 }
 
 void Arm::SetPosition(float position)
@@ -45,8 +52,12 @@ void Arm::ResetConstants(double upLimit, double downLimit)
 {
 	m_UpLimit = upLimit;
 	m_DownLimit = downLimit;
-	m_Position = CONSTANT("ARM_UP");
-	m_Motor->SetPIDGains(CONSTANT("ARM_P"), CONSTANT("ARM_I"), CONSTANT("ARM_D"), 0);
+	m_Position = 0;
+	std::string pConstant = m_Name + "_P";
+	std::string iConstant = m_Name + "_I";
+	std::string dConstant = m_Name + "_D";
+
+	m_Motor->SetPIDGains(CONSTANT(pConstant.c_str()), CONSTANT(iConstant.c_str()), CONSTANT(dConstant.c_str()), 0);
 	SetCurrentLimit();
 	std::cout << "In the arm reset constants" << std::endl;
 }
@@ -68,7 +79,7 @@ void Arm::handle()
 	}
 
     //SmartDashboard::PutNumber("Arm", (m_Motor->GetPosition()-m_PlanetaryHardstop));
-	std::cout << "Current arm: " << m_Motor->GetPosition() << std::endl;
+	std::cout << m_Name << " position: " << m_Motor->GetPosition() << std::endl;
 }
 void Arm::SetCurrentLimit()
 {

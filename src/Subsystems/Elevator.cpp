@@ -46,6 +46,10 @@ void Elevator::ResetConstants()
 	m_PID->UpdateConstants(CONSTANT("ELEVATOR_P"), CONSTANT("ELEVATOR_I"), CONSTANT("ELEVATOR_D"), 0);
 	std::cout << "In the elevator reset constants" << std::endl;
 }
+bool Elevator::AtTarget()
+{
+	return (fabs(m_Position - m_Encoder->GetDistance()) < CONSTANT("ELEVATOR_TOLERANCE"));
+}
 void Elevator::handle()
 {
 	float currentPosition = m_Encoder->GetDistance();
