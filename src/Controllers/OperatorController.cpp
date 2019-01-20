@@ -94,11 +94,11 @@ void OperatorController::handle(CowRobot *bot)
     bot->GetWrist()->SetPosition(manualWristPosition);
 
     float armJoystickDeadband = CowLib::Deadband(m_CB->GetOperatorGamepadAxis(0), 0.2);
-    float manualArmPosition = bot->GetArm()->GetSetpoint() + (armJoystickDeadband * 28);
+    float manualArmPosition = bot->GetArm()->GetSetpoint() + (armJoystickDeadband * 18);
     bot->GetArm()->SetPosition(manualArmPosition);
 
-    //float elevatorJoystickDeadband = CowLib::Deadband(m_CB->GetDriveAxis(0), 0.2);
-    //float manualElevatorPosition = bot->GetElevator()->GetDistance() + (elevatorJoystickDeadband * 0.5);
-    //bot->GetElevator()->SetPosition(manualElevatorPosition);
+    float elevatorJoystickDeadband = CowLib::Deadband(m_CB->GetDriveAxis(0), 0.2);
+    float manualElevatorPosition = bot->GetElevator()->GetSetPoint() + (elevatorJoystickDeadband * .75);
+    bot->GetElevator()->SetPosition(manualElevatorPosition);
 }
 
