@@ -39,7 +39,7 @@ namespace CowLib
         float GetPosition();
         void SetPIDGains(float pGain, float iGain, float dGain, float fGain);
         void Set(float);
-        void SetInverted();
+        void SetInverted(bool Value);
         TalonSRX *GetInternalMotor();
     private:
         TalonSRX *m_MotorController;

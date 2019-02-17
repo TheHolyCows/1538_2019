@@ -19,12 +19,16 @@
 class Arm 
 {
 public:
-	Arm(int motorController, double upLimit, double downLimit, std::string name, bool changeDirection);
+	Arm(int motorController, double upLimit, double downLimit, std::string name, bool changeDirection, double degreesPerTick);
+	bool AtTarget();
 	void SetPosition(float position);
 	float GetSetpoint();
 	//void DisabledCalibration();
 	void ResetConstants(double upLimit, double downLimit);
 	void handle();
+
+	float GetPosition();
+	
 
 	void SetCurrentLimit();
 	virtual ~Arm();
@@ -34,6 +38,7 @@ private:
 	float m_Position;
 	float m_UpLimit;
 	float m_DownLimit;
+	double m_DegreesPerTick;
 	std::string m_Name;
 };
 

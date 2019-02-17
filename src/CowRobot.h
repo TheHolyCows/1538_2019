@@ -15,13 +15,14 @@
 #include "CowLib/CowAlphaNum.h"
 #include "CowGyro.h"
 #include "CowLib/CowMotorController.h"
+#include "CowLib/CowCanifier.h"
 #include "CowLib/CowLPF.h"
 #include "frc/smartdashboard/Smartdashboard.h"
 #include "networktables/NetworkTable.h"
 #include "Subsystems/Elevator.h"
 #include "Subsystems/Arm.h"
 #include "Subsystems/Intake.h"
-
+#include "CowStateMachine.h"
 
 class CowRobot
 {
@@ -39,6 +40,8 @@ private:
     CowLib::CowMotorController *m_RightDriveB;
     CowLib::CowMotorController *m_RightDriveC;
 
+    CowLib::CowCanifier *m_Canifier;
+
     CowLib::CowGyro *m_Gyro;
     frc::Encoder *m_DriveEncoder;
     frc::Encoder *m_DriveEncoderLeft;
@@ -53,6 +56,7 @@ private:
     Arm *m_Arm;
     Arm *m_Wrist;
     Intake *m_Intake;
+    CowStateMachine *m_StateMachine;
 
     bool m_DetectLoadingStation;
 
@@ -147,6 +151,16 @@ public:
     Intake* GetIntake()
     {
         return m_Intake;
+    }
+    
+    CowStateMachine* GetStateMachine()
+    {
+        return m_StateMachine;
+    }
+
+    CowLib::CowCanifier* GetCanifier()
+    {
+        return m_Canifier;
     }
 
     void UseLeftEncoder()

@@ -10,11 +10,13 @@
 #include <iostream>
 #include <frc/Timer.h>
 
-Arm::Arm(int motorController, double upLimit, double downLimit, std::string name, bool changeDirection)
+Arm::Arm(int motorController, double upLimit, double downLimit, std::string name, bool changeDirection, double degreesPerTick)
 {
 	m_Motor = new CowLib::CowMotorController(motorController);
 	m_Motor->SetControlMode(CowLib::CowMotorController::POSITION);
 	m_Position = 0;
+	m_DegreesPerTick = degreesPerTick;
+	
 	
 	SetCurrentLimit();
 
@@ -23,10 +25,12 @@ Arm::Arm(int motorController, double upLimit, double downLimit, std::string name
 
 	m_Name = name;
 
-	if(changeDirection)
-	{
-		m_Motor->SetInverted();
-	}
+	m_Motor->SetInverted(changeDirection);
+}
+
+bool Arm::AtTarget()
+{
+	return (fabs(m_Position - m_Motor->GetPosition()) < CONSTANT("ARM_TOLERANCE"));
 }
 
 void Arm::SetPosition(float position)
@@ -39,6 +43,7 @@ void Arm::SetPosition(float position)
 	{
 		position = m_UpLimit;
 	}
+	position = position / m_DegreesPerTick;
 
 	m_Position = position;
 }
@@ -46,6 +51,11 @@ void Arm::SetPosition(float position)
 float Arm::GetSetpoint()
 {
 	return m_Position;
+}
+
+float Arm::GetPosition()
+{
+	return m_Motor->GetPosition()*m_DegreesPerTick;
 }
 
 void Arm::ResetConstants(double upLimit, double downLimit)
@@ -79,7 +89,7 @@ void Arm::handle()
 	}
 
     //SmartDashboard::PutNumber("Arm", (m_Motor->GetPosition()-m_PlanetaryHardstop));
-	std::cout << m_Name << " position: " << m_Motor->GetPosition() << std::endl;
+	//std::cout << m_Name << " position: " << m_Motor->GetPosition() << std::endl;
 }
 void Arm::SetCurrentLimit()
 {

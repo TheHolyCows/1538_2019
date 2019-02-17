@@ -28,18 +28,20 @@ CowRobot::CowRobot()
     m_RightDriveB->SetNeutralMode(CowLib::CowMotorController::BRAKE);
     m_RightDriveC->SetNeutralMode(CowLib::CowMotorController::BRAKE);
 
-    m_DriveEncoderRight = new frc::Encoder(MXP_QEI_3_A, MXP_QEI_3_B, false, frc::Encoder::k1X);
+    m_DriveEncoderRight = new frc::Encoder(MXP_QEI_4_A, MXP_QEI_4_B, false, frc::Encoder::k1X);
     m_DriveEncoderRight->SetDistancePerPulse(0.052359916666667); // 6*pi/360
 
-    m_DriveEncoderLeft = new frc::Encoder(MXP_QEI_4_A, MXP_QEI_4_B, true, frc::Encoder::k1X);
+    m_DriveEncoderLeft = new frc::Encoder(MXP_QEI_5_A, MXP_QEI_5_B, true, frc::Encoder::k1X);
     m_DriveEncoderLeft->SetDistancePerPulse(0.052359916666667); // 6*pi/360
 
     m_DriveEncoder = m_DriveEncoderRight;
 
-    m_Elevator = new Elevator (6, 7, MXP_QEI_5_A, MXP_QEI_5_B);
-    m_Arm = new Arm(3, CONSTANT("ARM_UP_LIMIT"), CONSTANT("ARM_DOWN"), "ARM", false);
-    m_Intake = new Intake(5);
-    m_Wrist = new Arm(4, CONSTANT("WRIST_UP"), CONSTANT("WRIST_DOWN"), "WRIST", true);
+    m_Elevator = new Elevator (2, 3, MXP_QEI_3_A, MXP_QEI_3_B);
+    m_Arm = new Arm(6, CONSTANT("ARM_UP_LIMIT"), CONSTANT("ARM_DOWN"), "ARM", true, 0.0357055664);
+    m_Intake = new Intake(4);
+    m_Wrist = new Arm(5, CONSTANT("WRIST_UP"), CONSTANT("WRIST_DOWN"), "WRIST", true, 0.087890625);
+
+    m_StateMachine = new CowStateMachine(m_Elevator, m_Arm, m_Wrist);
 
     m_DetectLoadingStation = false;
     m_LoadDetect_LPF = new CowLib::CowLPF(CONSTANT("LOAD_DETECT_LPF"));
@@ -54,6 +56,8 @@ CowRobot::CowRobot()
     //m_Gyro->Reset();
     m_PowerDistributionPanel = new frc::PowerDistributionPanel();
     m_WebServer = new CowLib::CowLogger();
+
+    m_Canifier = new CowLib::CowCanifier(15);
 
     m_LeftDriveValue = 0;
     m_RightDriveValue = 0;
@@ -117,8 +121,8 @@ void CowRobot::handle()
     float tmpLeftMotor = m_LeftDriveValue;
     float tmpRightMotor = m_RightDriveValue;
 
-    SetLeftMotors(tmpLeftMotor);
-    SetRightMotors(tmpRightMotor);
+    //SetLeftMotors(tmpLeftMotor);
+    //SetRightMotors(tmpRightMotor);
 
     if(m_DSUpdateCount % 10 == 0)
     {
@@ -133,35 +137,39 @@ void CowRobot::handle()
         //          << m_DriveEncoder->Get() << " "
         //      << m_Gyro->GetAngle() << std::endl;std::cout << "Heading: " << m_Gyro->GetAngle() << " " << m_DriveEncoder->GetDistance() << std::endl;
 
-        std::cout << "tv: " << double(m_Limelight->GetNumber("tv",0.0)) << std::endl;
-        std::cout << "tx: " << double(m_Limelight->GetNumber("tx",0.0)) << std::endl;
-        std::cout << "ty: " << double(m_Limelight->GetNumber("ty",0.0)) << std::endl;
-        std::cout << "ta: " << double(m_Limelight->GetNumber("ta",0.0)) << std::endl;
+        //std::cout << "tv: " << double(m_Limelight->GetNumber("tv",0.0)) << std::endl;
+        //std::cout << "tx: " << double(m_Limelight->GetNumber("tx",0.0)) << std::endl;
+        //std::cout << "ty: " << double(m_Limelight->GetNumber("ty",0.0)) << std::endl;
+        //std::cout << "ta: " << double(m_Limelight->GetNumber("ta",0.0)) << std::endl;
+        std::cout << "Elevator: " << m_Elevator->GetDistance() << std::endl;
     }
 
-    double LoadingStationLPF = m_LoadDetect_LPF->Calculate(0);
-    //std::cout << "start time: " << m_StartTime << " match time: " << m_MatchTime << std::endl;
-    if (m_DetectLoadingStation)
-    {
-        if (LoadingStationLPF > CONSTANT("LS_DETECT_THRESHOLD"))
-        {
-            m_Intake->SetSpeed(0);
-            m_Elevator->SetPosition(CONSTANT("ELEVATOR_LOADING_STATION_FINISH"));
-            if (m_Elevator->AtTarget())
-            {
-                m_DetectLoadingStation = false;
-            }
-        }
+    // double LoadingStationLPF = m_LoadDetect_LPF->Calculate(0);
+    // //std::cout << "start time: " << m_StartTime << " match time: " << m_MatchTime << std::endl;
+    // if (m_DetectLoadingStation)
+    // {
+    //     if (LoadingStationLPF > CONSTANT("LS_DETECT_THRESHOLD"))
+    //     {
+    //         m_Intake->SetSpeed(0);
+    //         m_Elevator->SetPosition(CONSTANT("ELEVATOR_LOADING_STATION_FINISH"));
+    //         if (m_Elevator->AtTarget())
+    //         {
+    //             m_DetectLoadingStation = false;
+    //         }
+    //     }
         
-    }
+    // }
+
+    m_StateMachine->handle();
     m_Elevator->handle();
     m_Arm->handle();
     m_Intake->handle();
     m_Wrist->handle();
+    m_Canifier->Handle();
 
-    frc::SmartDashboard::PutNumber("Drive distance", GetDriveDistance());
-    frc::SmartDashboard::PutNumber("lEnc", m_DriveEncoderLeft->GetDistance());
-    frc::SmartDashboard::PutNumber("rEnc", m_DriveEncoderRight->GetDistance());
+    //frc::SmartDashboard::PutNumber("Drive distance", GetDriveDistance());
+    //frc::SmartDashboard::PutNumber("lEnc", m_DriveEncoderLeft->GetDistance());
+    //frc::SmartDashboard::PutNumber("rEnc", m_DriveEncoderRight->GetDistance());
 
     m_DSUpdateCount++;
 }

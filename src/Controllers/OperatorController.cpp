@@ -9,6 +9,7 @@ OperatorController::OperatorController(CowControlBoard *controlboard)
 
 void OperatorController::handle(CowRobot *bot)
 {
+    bot->GetCanifier()->SetLEDColor(CONSTANT("R_COLOR"), CONSTANT("G_COLOR"), CONSTANT("B_COLOR"));
     if(m_CB->GetDriveButton(1))
     {
         bot->TurnToHeading(90);
@@ -29,45 +30,118 @@ void OperatorController::handle(CowRobot *bot)
                                 m_CB->GetSteeringButton(FAST_TURN));
         }
     }
-    if(m_CB->GetSteeringButton(4))
+
+    
+    if(m_CB->GetSteeringButton(3))
     {
-        //do something to go to the scale
-        bot->GetElevator()->SetPosition(CONSTANT("ELEVATOR_SCALE"));
+        bot->GetStateMachine()->SetState(CowStateMachine::CowState::IDLE);
     }
-    else if(m_CB->GetSteeringButton(1))
+    //if switch is on for forward arm placement
+    if(!m_CB->GetOperatorButton(8))
     {
-        //go to switch
-        bot->GetElevator()->SetPosition(CONSTANT("ELEVATOR_SWITCH"));
+        //if cargo or hatch - on for cargo
+        if(m_CB->GetOperatorButton(10))
+        {
+            if(m_CB->GetOperatorButton(4))
+            {
+                bot->GetStateMachine()->SetState(CowStateMachine::CowState::CARGO_1_F);
+            }
+
+            if(m_CB->GetOperatorButton(6))
+            {
+                bot->GetStateMachine()->SetState(CowStateMachine::CowState::CARGO_2);
+            }
+
+            if(m_CB->GetOperatorButton(5))
+            {
+                bot->GetStateMachine()->SetState(CowStateMachine::CowState::CARGO_3);
+            }
+
+            if(m_CB->GetOperatorButton(7))
+            {
+                bot->GetStateMachine()->SetState(CowStateMachine::CowState::CARGO_GP_F);
+            }
+
+            if(m_CB->GetOperatorButton(9))
+            {
+                bot->GetStateMachine()->SetState(CowStateMachine::CowState::CARGO_HP_F);
+            }
+        }
+        else 
+        {
+            if(m_CB->GetOperatorButton(4))
+            {
+                bot->GetStateMachine()->SetState(CowStateMachine::CowState::HATCH_1_F);
+            }
+
+            if(m_CB->GetOperatorButton(6))
+            {
+                bot->GetStateMachine()->SetState(CowStateMachine::CowState::HATCH_2);
+            }
+
+            if(m_CB->GetOperatorButton(5))
+            {
+                bot->GetStateMachine()->SetState(CowStateMachine::CowState::HATCH_3);
+            }
+
+            if(m_CB->GetOperatorButton(7))
+            {
+                bot->GetStateMachine()->SetState(CowStateMachine::CowState::HATCH_GP_F);
+            }
+
+            if(m_CB->GetOperatorButton(9))
+            {
+                bot->GetStateMachine()->SetState(CowStateMachine::CowState::HATCH_HP_F);
+            }
+        }
     }
-    else if(m_CB->GetSteeringButton(2))
+    else 
     {
-        //go to ground
-        bot->GetElevator()->SetPosition(CONSTANT("ELEVATOR_GROUND"));
-    }
-    if(m_CB->GetOperatorButton(2))
-    {
-    	bot->GetArm()->SetPosition(CONSTANT("ARM_DOWN"));
+        //same stuff but for backwards facing (less positions since crossbar smashy)
+        if(m_CB->GetOperatorButton(10))
+        {
+            //cargo
+            if(m_CB->GetOperatorButton(4))
+            {
+                bot->GetStateMachine()->SetState(CowStateMachine::CowState::CARGO_1_B);
+            }
+
+            if(m_CB->GetOperatorButton(7))
+            {
+                bot->GetStateMachine()->SetState(CowStateMachine::CowState::CARGO_GP_B);
+            }
+
+            if(m_CB->GetOperatorButton(9))
+            {
+                bot->GetStateMachine()->SetState(CowStateMachine::CowState::CARGO_HP_B);
+            }
+        }
+        else 
+        {
+            if(m_CB->GetOperatorButton(4))
+            {
+                bot->GetStateMachine()->SetState(CowStateMachine::CowState::HATCH_1_B);
+            }
+
+            if(m_CB->GetOperatorButton(7))
+            {
+                bot->GetStateMachine()->SetState(CowStateMachine::CowState::HATCH_GP_B);
+            }
+
+            if(m_CB->GetOperatorButton(9))
+            {
+                bot->GetStateMachine()->SetState(CowStateMachine::CowState::HATCH_HP_B);
+            }
+        }
 
     }
-    if(m_CB->GetOperatorButton(1))
-    {
-    	bot->GetArm()->SetPosition(CONSTANT("ARM_UP"));
-    }
-     if(m_CB->GetOperatorButton(3))
-    {
-    	bot->GetArm()->SetPosition(CONSTANT("ARM_LOADING_STATION"));
-        bot->GetWrist()->SetPosition(CONSTANT("WRIST_LOADING_STATION"));
-        bot->GetElevator()->SetPosition(CONSTANT("ELEVATOR_LOADING_STATION"));
-    }
-    if(m_CB->GetSteeringButton(12))
-    {
-        bot->ResetLoadingStation();
-    }
-    if(m_CB->GetOperatorButton(7))
+
+
+    if (m_CB->GetOperatorButton(2))
     {
         bot->GetIntake()->SetSpeed(1);
     }
-    else if(m_CB->GetOperatorButton(4))
+    else if (m_CB->GetOperatorButton(1))
     {
         bot->GetIntake()->SetSpeed(-1);
     }
@@ -75,30 +149,30 @@ void OperatorController::handle(CowRobot *bot)
     {
         bot->GetIntake()->SetSpeed(0);
     }
+    
+    // if(m_CB->GetOperatorButton(6))
+    // {
+    //     bot->GetElevator()->SetPosition(CONSTANT("HATCH_POS_ELEVATOR"));
+    //     bot->GetWrist()->SetPosition(CONSTANT("HATCH_POS_WRIST"));
+    //     bot->GetArm()->SetPosition(CONSTANT("HATCH_POS_ARM"));
+    // }
 
-    if(m_CB->GetOperatorButton(6))
-    {
-        bot->GetElevator()->SetPosition(CONSTANT("HATCH_POS_ELEVATOR"));
-        bot->GetWrist()->SetPosition(CONSTANT("HATCH_POS_WRIST"));
-        bot->GetArm()->SetPosition(CONSTANT("HATCH_POS_ARM"));
-    }
+    // if(m_CB->GetOperatorButton(9))
+    // {
+    //     bot->GetElevator()->SetPosition(CONSTANT("BALL_POS_ELEVATOR"));
+    //     bot->GetWrist()->SetPosition(CONSTANT("BALL_POS_WRIST"));
+    //     bot->GetArm()->SetPosition(CONSTANT("BALL_POS_ARM"));
+    // }
+    // float wristJoystickDeadband = CowLib::Deadband(m_CB->GetOperatorGamepadAxis(1), 0.2);
+    // float manualWristPosition = bot->GetWrist()->GetSetpoint() + (wristJoystickDeadband * 28);
+    // bot->GetWrist()->SetPosition(manualWristPosition);
 
-    if(m_CB->GetOperatorButton(9))
-    {
-        bot->GetElevator()->SetPosition(CONSTANT("BALL_POS_ELEVATOR"));
-        bot->GetWrist()->SetPosition(CONSTANT("BALL_POS_WRIST"));
-        bot->GetArm()->SetPosition(CONSTANT("BALL_POS_ARM"));
-    }
-    float wristJoystickDeadband = CowLib::Deadband(m_CB->GetOperatorGamepadAxis(1), 0.2);
-    float manualWristPosition = bot->GetWrist()->GetSetpoint() + (wristJoystickDeadband * 28);
-    bot->GetWrist()->SetPosition(manualWristPosition);
+    // float armJoystickDeadband = CowLib::Deadband(m_CB->GetOperatorGamepadAxis(0), 0.2);
+    // float manualArmPosition = bot->GetArm()->GetSetpoint() + (armJoystickDeadband * 18);
+    // bot->GetArm()->SetPosition(manualArmPosition);
 
-    float armJoystickDeadband = CowLib::Deadband(m_CB->GetOperatorGamepadAxis(0), 0.2);
-    float manualArmPosition = bot->GetArm()->GetSetpoint() + (armJoystickDeadband * 18);
-    bot->GetArm()->SetPosition(manualArmPosition);
-
-    float elevatorJoystickDeadband = CowLib::Deadband(m_CB->GetDriveAxis(0), 0.2);
-    float manualElevatorPosition = bot->GetElevator()->GetSetPoint() + (elevatorJoystickDeadband * .75);
-    bot->GetElevator()->SetPosition(manualElevatorPosition);
+    // float elevatorJoystickDeadband = CowLib::Deadband(m_CB->GetDriveAxis(0), 0.2);
+    // float manualElevatorPosition = bot->GetElevator()->GetSetPoint() + (elevatorJoystickDeadband * .75);
+    // bot->GetElevator()->SetPosition(manualElevatorPosition);
 }
 
