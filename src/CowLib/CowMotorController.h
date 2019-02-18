@@ -37,7 +37,7 @@ namespace CowLib
         void SetControlMode(CowControlMode);
         enum CowControlMode GetControlMode();
         float GetPosition();
-        void SetPIDGains(float pGain, float iGain, float dGain, float fGain);
+        void SetPIDGains(float pGain, float iGain, float dGain, float fGain, double peakOutput);
         void Set(float);
         void SetInverted(bool Value);
         TalonSRX *GetInternalMotor();

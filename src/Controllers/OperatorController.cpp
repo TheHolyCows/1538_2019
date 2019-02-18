@@ -17,18 +17,31 @@ void OperatorController::handle(CowRobot *bot)
     }
     else
     {
-        if(m_CB->GetSteeringButton(3))
-        {
-            bot->DriveSpeedTurn(m_CB->GetDriveStickY(),
-                                (bot->GetLimelight()->GetNumber("tx",0.0)*CONSTANT("LIMELIGHT_X_KP")),
-                                1);
-        }
-        else
-        { 
+       // if(m_CB->GetSteeringButton(3))
+       // {
+       //     bot->DriveSpeedTurn(m_CB->GetDriveStickY(),
+       //                         (bot->GetLimelight()->GetNumber("tx",0.0)*CONSTANT("LIMELIGHT_X_KP")),
+       //                         1);
+       // }
+       // else
+       // { 
             bot->DriveSpeedTurn(m_CB->GetDriveStickY(),
                                 m_CB->GetSteeringX(),
                                 m_CB->GetSteeringButton(FAST_TURN));
-        }
+      //  }
+    }
+
+    //quickturn
+    if(m_CB->GetDriveButton(1))
+    {
+        bot->TurnToHeading(90);
+        //bot->DriveDistanceWithHeading(0, 12, 0.5);
+    }
+    else
+    {
+        bot->DriveSpeedTurn(m_CB->GetDriveStickY(),
+                            m_CB->GetSteeringX(),
+                            m_CB->GetSteeringButton(FAST_TURN));
     }
 
     
@@ -171,8 +184,12 @@ void OperatorController::handle(CowRobot *bot)
     // float manualArmPosition = bot->GetArm()->GetSetpoint() + (armJoystickDeadband * 18);
     // bot->GetArm()->SetPosition(manualArmPosition);
 
-    // float elevatorJoystickDeadband = CowLib::Deadband(m_CB->GetDriveAxis(0), 0.2);
-    // float manualElevatorPosition = bot->GetElevator()->GetSetPoint() + (elevatorJoystickDeadband * .75);
-    // bot->GetElevator()->SetPosition(manualElevatorPosition);
+    float elevatorJoystickDeadband = CowLib::Deadband(m_CB->GetOperatorGamepadAxis(1), 0.2);
+    if(elevatorJoystickDeadband != 0)
+    {
+        bot->GetStateMachine()->SetState(CowStateMachine::CowState::MANUAL_CONTROL);
+        float manualElevatorPosition = bot->GetElevator()->GetSetPoint() + (elevatorJoystickDeadband * .4);
+        bot->GetElevator()->SetPosition(manualElevatorPosition);
+    }
 }
 

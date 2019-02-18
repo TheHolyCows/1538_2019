@@ -1,4 +1,6 @@
 #include "CowStateMachine.h"
+#include <iostream>
+using namespace std;
 
 CowStateMachine::CowStateMachine(Elevator *elevator, Arm *arm, Arm *wrist)
 {
@@ -88,7 +90,7 @@ double CowStateMachine::GetElevatorSP(CowState state)
     {
         constantValue = CONSTANT("IDLE_ELV");
     }
-    return constantValue * 0.45833333;
+    return constantValue;
 }
 
 double CowStateMachine::GetArmSP(CowState state)
@@ -237,7 +239,67 @@ double CowStateMachine::GetWristSP(CowState state)
         constantValue = CONSTANT("IDLE_WRIST");
     }
 
-    return constantValue;
+    return constantValue + m_Arm->GetPosition();
+}
+
+void CowStateMachine::MoveSafe(CowState state)
+{
+    double armSafeZone = CONSTANT("ARM_SAFE_SWING") - CONSTANT("ARM_TOLERANCE");
+    if(fabs(m_Elevator->GetDistance() - GetElevatorSP(state)) < CONSTANT("ELEVATOR_TOLERANCE"))
+    {
+        m_Elevator->SetPosition(GetElevatorSP(state));
+        m_Wrist->SetPosition(GetWristSP(state));
+        m_Arm->SetPosition(GetArmSP(state));
+        return;
+    }
+    if (GetElevatorSP(state) > m_Elevator->GetDistance())
+    {
+        if (m_Elevator->GetDistance() < CONSTANT("ELV_SAFE_SWING"))
+        {
+            if (GetArmSP(state) < CONSTANT("ARM_SAFE_SWING"))
+            {
+                m_Arm->SetPosition(CONSTANT("ARM_SAFE_SWING"));
+            }
+            else
+            {
+                m_Arm->SetPosition(GetArmSP(state));
+            }
+        }
+        else
+        {
+            m_Arm->SetPosition(GetArmSP(state));
+        }
+        m_Elevator->SetPosition(GetElevatorSP(state));
+        m_Wrist->SetPosition(GetWristSP(state));
+    }
+    else
+    {
+        if (m_Arm->GetPosition() < armSafeZone)
+        {
+            if (GetArmSP(state) >= CONSTANT("ARM_SAFE_SWING"))
+            {
+                m_Arm->SetPosition(GetArmSP(state));
+            }
+            else
+            {
+                m_Arm->SetPosition(CONSTANT("ARM_SAFE_SWING"));
+            }
+            m_Elevator->SetPosition(CONSTANT("IDLE_ELV"));
+        }
+        else
+        {
+            if (GetArmSP(state) >= CONSTANT("ARM_SAFE_SWING"))
+            {
+                m_Arm->SetPosition(GetArmSP(state));
+            }
+            else
+            {
+                m_Arm->SetPosition(CONSTANT("ARM_SAFE_SWING"));
+            }
+            m_Elevator->SetPosition(GetElevatorSP(state));
+        }
+        m_Wrist->SetPosition(GetWristSP(state));
+    }
 }
 
 void CowStateMachine::handle()
@@ -245,6 +307,13 @@ void CowStateMachine::handle()
     double elevatorPV = m_Elevator->GetDistance();
     double armPV = m_Arm->GetPosition();
     double wristPV = m_Wrist->GetPosition();
+
+    if (m_TargetState == CowState::MANUAL_CONTROL)
+    {
+        std::cout << "In manual control for state machine" << std::endl;
+        m_CurrentState = CowState::MANUAL_CONTROL;
+        return;
+    }
 
     if (m_CurrentState != m_TargetState)
     {
@@ -286,25 +355,19 @@ void CowStateMachine::handle()
                 m_TargetState == CowState::HATCH_HP_F ||
                 m_TargetState == CowState::IDLE)
                 {
-                    m_Elevator->SetPosition(GetElevatorSP(m_TargetState));
-                    m_Arm->SetPosition(GetArmSP(m_TargetState));
-                    m_Wrist->SetPosition(GetWristSP(m_TargetState) + m_Arm->GetPosition());
+                    MoveSafe(m_TargetState);
                     return;
                 }
                 else if (m_CurrentState != CowState::IDLE)
                 {
-                    m_Elevator->SetPosition(GetElevatorSP(CowState::IDLE));
-                    m_Arm->SetPosition(GetArmSP(CowState::IDLE));
-                    m_Wrist->SetPosition(GetWristSP(CowState::IDLE));
+                    MoveSafe(CowState::IDLE);
                     m_InTransit = true;
                     return;
                 }
             }
             else
             {
-                m_Elevator->SetPosition(GetElevatorSP(CowState::IDLE));
-                m_Arm->SetPosition(GetArmSP(CowState::IDLE));
-                m_Wrist->SetPosition(GetWristSP(CowState::IDLE));
+                MoveSafe(CowState::IDLE);
                 m_InTransit = true;
                 return;
             }
@@ -348,6 +411,10 @@ void CowStateMachine::handle()
         //         m_InTransit = true;
         //     }
         // }
+    }
+    else
+    {
+        MoveSafe(m_TargetState);
     }
     //get positions of other subsystems
     // switch (m_TargetState)

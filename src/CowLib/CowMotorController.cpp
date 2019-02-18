@@ -85,13 +85,17 @@ namespace CowLib
     {
     	return m_MotorController->GetSelectedSensorPosition(0);
     }
-    void CowMotorController::SetPIDGains(float pGain, float iGain, float dGain, float fGain)
+    void CowMotorController::SetPIDGains(float pGain, float iGain, float dGain, float fGain, double peakOutput)
     {
     	m_MotorController->Config_kP(0, pGain, 100);
     	m_MotorController->Config_kI(0, iGain, 100);
     	m_MotorController->Config_kD(0, dGain, 100);
     	m_MotorController->Config_kF(0, fGain, 100);
+        m_MotorController->ConfigPeakOutputForward(peakOutput);
+        m_MotorController->ConfigPeakOutputReverse(-peakOutput);
     }
+
+    //void CowMotorController
 
     void CowMotorController::Set(float value)
     {

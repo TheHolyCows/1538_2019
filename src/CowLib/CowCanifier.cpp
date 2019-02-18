@@ -20,9 +20,9 @@ namespace CowLib
     }
     void CowCanifier::Handle()
     {
-        double dutyCycle_R = double(m_R / 255.0);
-        double dutyCycle_G = double(m_G / 255.0);
-        double dutyCycle_B = double(m_B / 255.0);
+        double dutyCycle_R = double(m_R) / 255.0;
+        double dutyCycle_G = double(m_G) / 255.0;
+        double dutyCycle_B = double(m_B) / 255.0;
 
         m_Canifier->SetLEDOutput(dutyCycle_R, ctre::phoenix::CANifier::LEDChannelB);
         m_Canifier->SetLEDOutput(dutyCycle_G, ctre::phoenix::CANifier::LEDChannelA);

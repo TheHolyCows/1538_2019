@@ -4,6 +4,7 @@
 #include "CowConstants.h"
 #include "Subsystems/Elevator.h"
 #include "Subsystems/Arm.h"
+#include <string>
 
 class CowStateMachine
 {
@@ -26,7 +27,8 @@ public:
         CARGO_GP_F,
         CARGO_GP_B,
         HATCH_GP_F,
-        HATCH_GP_B
+        HATCH_GP_B,
+        MANUAL_CONTROL
     };
 private:
     // enum ElevatorState 
@@ -80,6 +82,27 @@ private:
     Elevator *m_Elevator;
     Arm *m_Arm;
     Arm *m_Wrist;
+    void MoveSafe(CowState state);
+
+    std::string m_CowStateString [18] = 
+    {"IDLE",
+    "CARGO_1_F",
+    "CARGO_1_B",
+    "CARGO_2",
+    "CARGO_3",
+    "HATCH_1_F",
+    "HATCH_1_B",
+    "HATCH_2",
+    "HATCH_3",
+    "CARGO_HP_F",
+    "CARGO_HP_B",
+    "HATCH_HP_F",
+    "HATCH_HP_B",
+    "CARGO_GP_F",
+    "CARGO_GP_B",
+    "HATCH_GP_F",
+    "HATCH_GP_B",
+    "MANUAL_CONTROL"};
 
     CowState m_CurrentState;
     CowState m_TargetState;
@@ -97,6 +120,14 @@ public:
     void SetState(CowState state)
     {
         m_TargetState = state;
+    }
+    std::string GetTargetStateString()
+    {
+        return m_CowStateString [m_TargetState];
+    }
+    std::string GetCurrentStateString()
+    {
+        return m_CowStateString [m_CurrentState];
     }
 
     void handle();

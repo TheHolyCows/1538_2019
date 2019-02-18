@@ -37,9 +37,9 @@ CowRobot::CowRobot()
     m_DriveEncoder = m_DriveEncoderRight;
 
     m_Elevator = new Elevator (2, 3, MXP_QEI_3_A, MXP_QEI_3_B);
-    m_Arm = new Arm(6, CONSTANT("ARM_UP_LIMIT"), CONSTANT("ARM_DOWN"), "ARM", true, 0.0357055664);
+    m_Arm = new Arm(6, CONSTANT("ARM_PEAK_OUTPUT"), CONSTANT("ARM_UP_LIMIT"), CONSTANT("ARM_DOWN"), "ARM", true, 0.0357055664, CONSTANT("ARM_PEAK_OUTPUT"));
     m_Intake = new Intake(4);
-    m_Wrist = new Arm(5, CONSTANT("WRIST_UP"), CONSTANT("WRIST_DOWN"), "WRIST", true, 0.087890625);
+    m_Wrist = new Arm(5, CONSTANT("WRIST_PEAK_OUTPUT"), CONSTANT("WRIST_UP"), CONSTANT("WRIST_DOWN"), "WRIST", true, 0.087890625, CONSTANT("WRIST_PEAK_OUTPUT"));
 
     m_StateMachine = new CowStateMachine(m_Elevator, m_Arm, m_Wrist);
 
@@ -85,8 +85,9 @@ void CowRobot::Reset()
     m_MatchTime = 0;
     m_AccelY_LPF->UpdateBeta(CONSTANT("TIP_LPF"));
     m_LoadDetect_LPF->UpdateBeta(CONSTANT("LOAD_DETECT_LPF"));
-    m_Wrist->ResetConstants(CONSTANT("WRIST_UP"), CONSTANT("WRIST_DOWN"));
-    m_Arm->ResetConstants(CONSTANT("ARM_UP_LIMIT"), CONSTANT("ARM_DOWN"));
+    m_Elevator->ResetConstants();
+    m_Wrist->ResetConstants(CONSTANT("WRIST_UP"), CONSTANT("WRIST_DOWN"), CONSTANT("WRIST_PEAK_OUTPUT"));
+    m_Arm->ResetConstants(CONSTANT("ARM_UP_LIMIT"), CONSTANT("ARM_DOWN"), CONSTANT("ARM_PEAK_OUTPUT"));
 }
 
 void CowRobot::SetController(GenericController *controller)
@@ -141,7 +142,12 @@ void CowRobot::handle()
         //std::cout << "tx: " << double(m_Limelight->GetNumber("tx",0.0)) << std::endl;
         //std::cout << "ty: " << double(m_Limelight->GetNumber("ty",0.0)) << std::endl;
         //std::cout << "ta: " << double(m_Limelight->GetNumber("ta",0.0)) << std::endl;
-        std::cout << "Elevator: " << m_Elevator->GetDistance() << std::endl;
+        std::cout << "Elevator: " << m_Elevator->GetDistance() << " SP: " << m_Elevator->GetSetPoint() << std::endl;
+        std::cout << "Current State:" << m_StateMachine->GetCurrentStateString() << "Target State: " << m_StateMachine->GetTargetStateString() << std::endl;
+        std::cout << "Arm: " << m_Arm->GetPosition() << "Target Position: " << m_Arm->GetSetpoint() << std::endl;
+        std::cout << "Wrist: " << m_Wrist->GetPosition() << "Target Position: " << m_Wrist->GetSetpoint() << std::endl;
+
+        std::cout << "Elevator at target: " << m_Elevator->AtTarget() << " Arm at target: " << m_Arm-> AtTarget() << " Wrist at target: " << m_Wrist->AtTarget() << std::endl << std::endl;
     }
 
     // double LoadingStationLPF = m_LoadDetect_LPF->Calculate(0);

@@ -10,12 +10,13 @@
 #include <iostream>
 #include <frc/Timer.h>
 
-Arm::Arm(int motorController, double upLimit, double downLimit, std::string name, bool changeDirection, double degreesPerTick)
+Arm::Arm(int motorController, double maxSpeed, double upLimit, double downLimit, std::string name, bool changeDirection, double degreesPerTick, double peakOutput)
 {
 	m_Motor = new CowLib::CowMotorController(motorController);
 	m_Motor->SetControlMode(CowLib::CowMotorController::POSITION);
 	m_Position = 0;
 	m_DegreesPerTick = degreesPerTick;
+    //m_MaxSpeed = maxSpeed;
 	
 	
 	SetCurrentLimit();
@@ -25,12 +26,13 @@ Arm::Arm(int motorController, double upLimit, double downLimit, std::string name
 
 	m_Name = name;
 
+	ResetConstants(upLimit, downLimit, peakOutput);
 	m_Motor->SetInverted(changeDirection);
 }
 
 bool Arm::AtTarget()
 {
-	return (fabs(m_Position - m_Motor->GetPosition()) < CONSTANT("ARM_TOLERANCE"));
+	return (fabs(m_Position - m_Motor->GetPosition() * m_DegreesPerTick) < CONSTANT("ARM_TOLERANCE"));
 }
 
 void Arm::SetPosition(float position)
@@ -58,7 +60,7 @@ float Arm::GetPosition()
 	return m_Motor->GetPosition()*m_DegreesPerTick;
 }
 
-void Arm::ResetConstants(double upLimit, double downLimit)
+void Arm::ResetConstants(double upLimit, double downLimit, double peakOutput)
 {
 	m_UpLimit = upLimit;
 	m_DownLimit = downLimit;
@@ -67,7 +69,7 @@ void Arm::ResetConstants(double upLimit, double downLimit)
 	std::string iConstant = m_Name + "_I";
 	std::string dConstant = m_Name + "_D";
 
-	m_Motor->SetPIDGains(CONSTANT(pConstant.c_str()), CONSTANT(iConstant.c_str()), CONSTANT(dConstant.c_str()), 0);
+	m_Motor->SetPIDGains(CONSTANT(pConstant.c_str())*CONSTANT("DEBUG_PID"), CONSTANT(iConstant.c_str())*CONSTANT("DEBUG_PID"), CONSTANT(dConstant.c_str())*CONSTANT("DEBUG_PID"), 0, peakOutput);
 	SetCurrentLimit();
 	std::cout << "In the arm reset constants" << std::endl;
 }
