@@ -122,8 +122,8 @@ void CowRobot::handle()
     float tmpLeftMotor = m_LeftDriveValue;
     float tmpRightMotor = m_RightDriveValue;
 
-    //SetLeftMotors(tmpLeftMotor);
-    //SetRightMotors(tmpRightMotor);
+    SetLeftMotors(tmpLeftMotor);
+    SetRightMotors(tmpRightMotor);
 
     if(m_DSUpdateCount % 10 == 0)
     {
@@ -142,14 +142,31 @@ void CowRobot::handle()
         //std::cout << "tx: " << double(m_Limelight->GetNumber("tx",0.0)) << std::endl;
         //std::cout << "ty: " << double(m_Limelight->GetNumber("ty",0.0)) << std::endl;
         //std::cout << "ta: " << double(m_Limelight->GetNumber("ta",0.0)) << std::endl;
-        std::cout << "Elevator: " << m_Elevator->GetDistance() << " SP: " << m_Elevator->GetSetPoint() << std::endl;
-        std::cout << "Current State:" << m_StateMachine->GetCurrentStateString() << "Target State: " << m_StateMachine->GetTargetStateString() << std::endl;
-        std::cout << "Arm: " << m_Arm->GetPosition() << "Target Position: " << m_Arm->GetSetpoint() << std::endl;
-        std::cout << "Wrist: " << m_Wrist->GetPosition() << "Target Position: " << m_Wrist->GetSetpoint() << std::endl;
+        //
 
-        std::cout << "Elevator at target: " << m_Elevator->AtTarget() << " Arm at target: " << m_Arm-> AtTarget() << " Wrist at target: " << m_Wrist->AtTarget() << std::endl << std::endl;
+        
+
+        //std::cout << "Elevator: " << m_Elevator->GetDistance() << " SP: " << m_Elevator->GetSetPoint() << std::endl;
+        //std::cout << "Current State:" << m_StateMachine->GetCurrentStateString() << " Target State: " << m_StateMachine->GetTargetStateString() << std::endl;
+        //std::cout << "Arm: " << m_Arm->GetPosition() << " SP: " << m_Arm->GetSetpoint() << std::endl;
+        //std::cout << "Wrist: " << m_Wrist->GetPosition() + m_Arm->GetPosition() << " SP: " << m_Wrist->GetSetpoint() << std::endl;
+
+        //std::cout << "Elevator at target: " << m_Elevator->AtTarget() << " Arm at target: " << m_Arm-> AtTarget() << " Wrist at target: " << m_Wrist->AtTarget() << std::endl << std::endl;
+        std::cout << m_StateMachine->InTransit();
     }
 
+    frc::SmartDashboard::PutNumber("Elevator SP", m_Elevator->GetSetPoint());
+    frc::SmartDashboard::PutNumber("Elevator PV", m_Elevator->GetDistance());
+    frc::SmartDashboard::PutString("PosePlanner State", m_StateMachine->GetCurrentStateString());
+    frc::SmartDashboard::PutString("PosePlanner TargetState", m_StateMachine->GetTargetStateString());
+    frc::SmartDashboard::PutNumber("Arm PV", m_Arm->GetPosition());
+    frc::SmartDashboard::PutNumber("Arm SP", m_Arm->GetSetpoint() * m_Arm->GetDegreesPerTick());
+    frc::SmartDashboard::PutNumber("Wrist PV", m_Wrist->GetPosition() - m_Arm->GetPosition());
+    frc::SmartDashboard::PutNumber("Wrist SP", (m_Wrist->GetSetpoint() * m_Arm->GetDegreesPerTick()) - m_Arm->GetPosition());
+    frc::SmartDashboard::PutNumber("Elevator At Target:", m_Elevator->AtTarget());
+    frc::SmartDashboard::PutNumber("Arm At Target:", m_Arm->AtTarget());
+    frc::SmartDashboard::PutNumber("Wrist At Target:", m_Wrist->AtTarget());
+    frc::SmartDashboard::PutNumber("In Transit:", m_StateMachine->InTransit());
     // double LoadingStationLPF = m_LoadDetect_LPF->Calculate(0);
     // //std::cout << "start time: " << m_StartTime << " match time: " << m_MatchTime << std::endl;
     // if (m_DetectLoadingStation)

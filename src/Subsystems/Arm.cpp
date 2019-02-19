@@ -32,7 +32,8 @@ Arm::Arm(int motorController, double maxSpeed, double upLimit, double downLimit,
 
 bool Arm::AtTarget()
 {
-	return (fabs(m_Position - m_Motor->GetPosition() * m_DegreesPerTick) < CONSTANT("ARM_TOLERANCE"));
+	std::string toleranceName = m_Name + "_TOLERANCE";
+	return (fabs(m_Position - m_Motor->GetPosition() * m_DegreesPerTick) < CONSTANT(toleranceName.c_str()));
 }
 
 void Arm::SetPosition(float position)

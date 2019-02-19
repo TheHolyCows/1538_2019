@@ -82,7 +82,7 @@ private:
     Elevator *m_Elevator;
     Arm *m_Arm;
     Arm *m_Wrist;
-    void MoveSafe(CowState state);
+    void MoveSafe(CowState state, int direction);
 
     std::string m_CowStateString [18] = 
     {"IDLE",
@@ -128,6 +128,10 @@ public:
     std::string GetCurrentStateString()
     {
         return m_CowStateString [m_CurrentState];
+    }
+    bool InTransit()
+    {
+        return m_InTransit;
     }
 
     void handle();

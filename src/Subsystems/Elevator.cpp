@@ -15,7 +15,7 @@ Elevator::Elevator(int motorRight, int motorLeft, int encoderA, int encoderB)
 	m_MotorLeft = new CowLib::CowMotorController(motorLeft);
 	m_Speed = 0;
 	m_Encoder = new frc::Encoder(encoderA, encoderB, false, frc::Encoder::k1X);
-	m_Encoder->SetDistancePerPulse(0.007999383791161);
+	m_Encoder->SetDistancePerPulse(0.004999636863426);
 	m_PID = new CowLib::CowPID(CONSTANT("ELEVATOR_P"), CONSTANT("ELEVATOR_I"), CONSTANT("ELEVATOR_D"), 0);
 	m_Position = 0;
 	m_PID->SetSetpoint(m_Position);
@@ -29,13 +29,13 @@ void Elevator::SetSpeed(float speed)
 void Elevator::SetPosition(float position)
 {
 	m_Position = position;
-	if(m_Position < 0)
+	if(m_Position < CONSTANT("ELEVATOR_MIN"))
 	{
-		m_Position = 0;
+		m_Position = CONSTANT("ELEVATOR_MIN");
 	}
-	else if(m_Position > CONSTANT("ELEVATOR_SCALE"))
+	else if(m_Position > CONSTANT("ELEVATOR_MAX"))
 	{
-		m_Position = CONSTANT("ELEVATOR_SCALE");
+		m_Position = CONSTANT("ELEVATOR_MAX");
 	}
 
 	m_PID->SetSetpoint(m_Position);

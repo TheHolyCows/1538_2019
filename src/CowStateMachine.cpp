@@ -242,63 +242,63 @@ double CowStateMachine::GetWristSP(CowState state)
     return constantValue + m_Arm->GetPosition();
 }
 
-void CowStateMachine::MoveSafe(CowState state)
+void CowStateMachine::MoveSafe(CowState state, int direction)
 {
     double armSafeZone = CONSTANT("ARM_SAFE_SWING") - CONSTANT("ARM_TOLERANCE");
     if(fabs(m_Elevator->GetDistance() - GetElevatorSP(state)) < CONSTANT("ELEVATOR_TOLERANCE"))
     {
         m_Elevator->SetPosition(GetElevatorSP(state));
-        m_Wrist->SetPosition(GetWristSP(state));
-        m_Arm->SetPosition(GetArmSP(state));
+        m_Wrist->SetPosition(GetWristSP(state) * direction);
+        m_Arm->SetPosition(GetArmSP(state) * direction);
         return;
     }
-    if (GetElevatorSP(state) > m_Elevator->GetDistance())
+    if (GetElevatorSP(state) >= m_Elevator->GetDistance())
     {
         if (m_Elevator->GetDistance() < CONSTANT("ELV_SAFE_SWING"))
         {
             if (GetArmSP(state) < CONSTANT("ARM_SAFE_SWING"))
             {
-                m_Arm->SetPosition(CONSTANT("ARM_SAFE_SWING"));
+                m_Arm->SetPosition(CONSTANT("ARM_SAFE_SWING") * direction);
             }
             else
             {
-                m_Arm->SetPosition(GetArmSP(state));
+                m_Arm->SetPosition(GetArmSP(state) * direction);
             }
         }
         else
         {
-            m_Arm->SetPosition(GetArmSP(state));
+            m_Arm->SetPosition(GetArmSP(state) * direction);
         }
         m_Elevator->SetPosition(GetElevatorSP(state));
-        m_Wrist->SetPosition(GetWristSP(state));
+        m_Wrist->SetPosition(GetWristSP(state) * direction);
     }
     else
     {
-        if (m_Arm->GetPosition() < armSafeZone)
+        if (fabs(m_Arm->GetPosition()) < armSafeZone)
         {
-            if (GetArmSP(state) >= CONSTANT("ARM_SAFE_SWING"))
+            if (GetArmSP(state) >= CONSTANT("ARM_SAFE_SWING") || m_InTransit)
             {
-                m_Arm->SetPosition(GetArmSP(state));
+                m_Arm->SetPosition(GetArmSP(state) * direction);
             }
             else
             {
-                m_Arm->SetPosition(CONSTANT("ARM_SAFE_SWING"));
+                m_Arm->SetPosition(CONSTANT("ARM_SAFE_SWING") * direction);
             }
             m_Elevator->SetPosition(CONSTANT("IDLE_ELV"));
         }
         else
         {
-            if (GetArmSP(state) >= CONSTANT("ARM_SAFE_SWING"))
+            if (fabs(GetArmSP(state)) >= CONSTANT("ARM_SAFE_SWING"))
             {
-                m_Arm->SetPosition(GetArmSP(state));
+                m_Arm->SetPosition(GetArmSP(state) * direction);
             }
             else
             {
-                m_Arm->SetPosition(CONSTANT("ARM_SAFE_SWING"));
+                m_Arm->SetPosition(CONSTANT("ARM_SAFE_SWING") * direction);
             }
             m_Elevator->SetPosition(GetElevatorSP(state));
         }
-        m_Wrist->SetPosition(GetWristSP(state));
+        m_Wrist->SetPosition(GetWristSP(state) * direction);
     }
 }
 
@@ -317,17 +317,36 @@ void CowStateMachine::handle()
 
     if (m_CurrentState != m_TargetState)
     {
-        if (m_Elevator->AtTarget() && m_Arm->AtTarget() && m_Wrist->AtTarget())
+        int tempDirection = 0;
+        if (m_TargetState == CowState::CARGO_1_F || 
+        m_TargetState == CowState::CARGO_2 ||
+        m_TargetState == CowState::CARGO_3 ||
+        m_TargetState == CowState::CARGO_GP_F ||
+        m_TargetState == CowState::CARGO_HP_F ||
+        m_TargetState == CowState::HATCH_1_F ||
+        m_TargetState == CowState::HATCH_2 ||
+        m_TargetState == CowState::HATCH_3 ||
+        m_TargetState == CowState::HATCH_GP_F ||
+        m_TargetState == CowState::HATCH_HP_F ||
+        m_TargetState == CowState::IDLE)
         {
-            if(m_InTransit)
-            {
-                m_CurrentState = CowState::IDLE;
-                m_InTransit = false;
-            }
-            else
-            {
-                m_CurrentState = m_TargetState;
-            }
+            tempDirection = 1;
+        }
+        else
+        {
+            tempDirection = -1;
+        }
+	
+        
+        if (fabs(m_Elevator->GetDistance() - GetElevatorSP(m_TargetState)) < CONSTANT("ELEVATOR_TOLERANCE") && fabs(m_Arm->GetPosition() -  (GetArmSP(m_TargetState) * tempDirection)) < CONSTANT("ARM_TOLERANCE") && fabs(m_Wrist->GetPosition() - (GetWristSP(m_TargetState) * tempDirection)) < CONSTANT("WRIST_TOLERANCE"))
+        {
+            m_CurrentState = m_TargetState;
+            return;
+        }
+        else if (m_Elevator->AtTarget() && m_Arm->AtTarget() && m_InTransit)
+        {
+            m_InTransit = false;
+            m_CurrentState = CowState::IDLE;
             return;
         }
         if (m_CurrentState == CowState::CARGO_1_F ||
@@ -342,9 +361,15 @@ void CowStateMachine::handle()
         m_CurrentState == CowState::HATCH_GP_F ||
         m_CurrentState == CowState::IDLE)
         {
-            if((armPV > CONSTANT("ARM_ELEVATOR_KEEPOUT_MIN") && armPV < CONSTANT("ARM_ELEVATOR_KEEPOUT_MAX")) || m_CurrentState == CowState::IDLE)
+            if(m_InTransit)
             {
-                if(m_TargetState == CowState::CARGO_2 ||
+                MoveSafe(CowState::IDLE, 1);
+                return;
+            }
+            if(armPV > 0 || m_CurrentState == CowState::IDLE)
+            {
+                if(m_TargetState == CowState::CARGO_1_F || 
+                m_TargetState == CowState::CARGO_2 ||
                 m_TargetState == CowState::CARGO_3 ||
                 m_TargetState == CowState::CARGO_GP_F ||
                 m_TargetState == CowState::CARGO_HP_F ||
@@ -355,66 +380,74 @@ void CowStateMachine::handle()
                 m_TargetState == CowState::HATCH_HP_F ||
                 m_TargetState == CowState::IDLE)
                 {
-                    MoveSafe(m_TargetState);
+                    MoveSafe(m_TargetState, 1);
                     return;
                 }
                 else if (m_CurrentState != CowState::IDLE)
                 {
-                    MoveSafe(CowState::IDLE);
+                    MoveSafe(CowState::IDLE , 1);
                     m_InTransit = true;
+                    std::cout << "IN TRANSIT\n";
                     return;
                 }
             }
             else
             {
-                MoveSafe(CowState::IDLE);
+                MoveSafe(CowState::IDLE, -1);
                 m_InTransit = true;
+                    std::cout << "IN TRANSIT\n";
                 return;
             }
         }
-        // if (m_CurrentState == CowState::CARGO_HP_B ||
-        // m_CurrentState == CowState::CARGO_1_B ||
-        // m_CurrentState == CowState::CARGO_GP_B ||
-        // m_CurrentState == CowState::HATCH_1_B ||
-        // m_CurrentState == CowState::HATCH_GP_B ||
-        // m_CurrentState == CowState::HATCH_HP_B ||
-        // m_CurrentState == CowState::IDLE)
-        // {
-        //     if(armPV < CONSTANT("ARM_ELEVATOR_KEEPOUT_MIN") || m_CurrentState == CowState::IDLE)
-        //     {
-        //         if(m_TargetState == CowState::CARGO_HP_B ||
-        //         m_TargetState == CowState::CARGO_1_B ||
-        //         m_TargetState == CowState::CARGO_GP_B ||
-        //         m_TargetState == CowState::HATCH_1_B ||
-        //         m_TargetState == CowState::HATCH_GP_B ||
-        //         m_TargetState == CowState::HATCH_HP_B ||
-        //         m_TargetState == CowState::IDLE)
-        //         {
-        //             m_Elevator->SetPosition(GetElevatorSP(m_TargetState));
-        //             m_Arm->SetPosition(GetArmSP(m_TargetState));
-        //             m_Wrist->SetPosition(GetWristSP(m_TargetState));
-        //         }
-        //         else
-        //         {
-        //             m_Elevator->SetPosition(GetElevatorSP(CowState::IDLE));
-        //             m_Arm->SetPosition(GetArmSP(CowState::IDLE));
-        //             m_Wrist->SetPosition(GetWristSP(CowState::IDLE));
-        //             m_InTransit = true;
-        //             return;
-        //         }
-        //     }
-        //     else
-        //     {
-        //         m_Elevator->SetPosition(GetElevatorSP(CowState::IDLE));
-        //         m_Arm->SetPosition(GetArmSP(CowState::IDLE));
-        //         m_Wrist->SetPosition(GetWristSP(CowState::IDLE));
-        //         m_InTransit = true;
-        //     }
-        // }
+        if (m_CurrentState == CowState::CARGO_HP_B ||
+        m_CurrentState == CowState::CARGO_1_B ||
+        m_CurrentState == CowState::CARGO_GP_B ||
+        m_CurrentState == CowState::HATCH_1_B ||
+        m_CurrentState == CowState::HATCH_GP_B ||
+        m_CurrentState == CowState::HATCH_HP_B ||
+        m_CurrentState == CowState::IDLE)
+        {
+            if (m_InTransit)
+            {
+                MoveSafe(CowState::IDLE, -1);
+                return;
+            }
+            if (armPV < 0 || m_CurrentState == CowState::IDLE)
+            {
+                if(m_TargetState == CowState::CARGO_HP_B ||
+                m_TargetState == CowState::CARGO_1_B ||
+                m_TargetState == CowState::CARGO_GP_B ||
+                m_TargetState == CowState::HATCH_1_B ||
+                m_TargetState == CowState::HATCH_GP_B ||
+                m_TargetState == CowState::HATCH_HP_B ||
+                m_TargetState == CowState::IDLE)
+                {
+                    MoveSafe(m_TargetState, -1);
+                }
+                else
+                {
+                    MoveSafe(CowState::IDLE, -1);
+                    m_InTransit = true;
+                    std::cout << "IN TRANSIT\n";
+                    return;
+                }
+            }
+            else
+            {
+                MoveSafe(CowState::IDLE, 1);
+                m_InTransit = true;
+                std::cout << "IN TRANSIT\n";
+                return;
+            }
+        }
+    }
+    else if(m_Arm->GetPosition() > 0)
+    {
+        MoveSafe(m_TargetState, 1);
     }
     else
     {
-        MoveSafe(m_TargetState);
+        MoveSafe(m_TargetState, -1);
     }
     //get positions of other subsystems
     // switch (m_TargetState)

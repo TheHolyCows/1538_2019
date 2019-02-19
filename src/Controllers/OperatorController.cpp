@@ -152,11 +152,11 @@ void OperatorController::handle(CowRobot *bot)
 
     if (m_CB->GetOperatorButton(2))
     {
-        bot->GetIntake()->SetSpeed(1);
+        bot->GetIntake()->SetSpeed(-1);
     }
     else if (m_CB->GetOperatorButton(1))
     {
-        bot->GetIntake()->SetSpeed(-1);
+        bot->GetIntake()->SetSpeed(1);
     }
     else
     {
