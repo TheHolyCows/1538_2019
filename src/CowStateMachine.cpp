@@ -308,6 +308,7 @@ void CowStateMachine::handle()
     double armPV = m_Arm->GetPosition();
     double wristPV = m_Wrist->GetPosition();
 
+    
     if (m_TargetState == CowState::MANUAL_CONTROL)
     {
         std::cout << "In manual control for state machine" << std::endl;
@@ -317,18 +318,9 @@ void CowStateMachine::handle()
 
     if (m_CurrentState != m_TargetState)
     {
+        //Make a temp direction to use for testing our position
         int tempDirection = 0;
-        if (m_TargetState == CowState::CARGO_1_F || 
-        m_TargetState == CowState::CARGO_2 ||
-        m_TargetState == CowState::CARGO_3 ||
-        m_TargetState == CowState::CARGO_GP_F ||
-        m_TargetState == CowState::CARGO_HP_F ||
-        m_TargetState == CowState::HATCH_1_F ||
-        m_TargetState == CowState::HATCH_2 ||
-        m_TargetState == CowState::HATCH_3 ||
-        m_TargetState == CowState::HATCH_GP_F ||
-        m_TargetState == CowState::HATCH_HP_F ||
-        m_TargetState == CowState::IDLE)
+        if (m_TargetState < CowState::BACKWARD_STATES)
         {
             tempDirection = 1;
         }
@@ -337,107 +329,62 @@ void CowStateMachine::handle()
             tempDirection = -1;
         }
 	
-        
+        //If our current encoder values are within their tolerance of the target states values, we are at target
         if (fabs(m_Elevator->GetDistance() - GetElevatorSP(m_TargetState)) < CONSTANT("ELEVATOR_TOLERANCE") && fabs(m_Arm->GetPosition() -  (GetArmSP(m_TargetState) * tempDirection)) < CONSTANT("ARM_TOLERANCE") && fabs(m_Wrist->GetPosition() - (GetWristSP(m_TargetState) * tempDirection)) < CONSTANT("WRIST_TOLERANCE"))
         {
             m_CurrentState = m_TargetState;
             return;
         }
-        else if (m_Elevator->AtTarget() && m_Arm->AtTarget() && m_InTransit)
+        //If our pid tells us we are in position and we are in transit, it means we are in the idle position
+        if (m_Elevator->AtTarget() && m_Arm->AtTarget() && m_InTransit)
         {
             m_InTransit = false;
             m_CurrentState = CowState::IDLE;
-            return;
         }
-        if (m_CurrentState == CowState::CARGO_1_F ||
-        m_CurrentState == CowState::CARGO_2 ||
-        m_CurrentState == CowState::CARGO_3 ||
-        m_CurrentState == CowState::CARGO_GP_F ||
-        m_CurrentState == CowState::CARGO_HP_F ||
-        m_CurrentState == CowState::HATCH_HP_F ||
-        m_CurrentState == CowState::HATCH_1_F ||
-        m_CurrentState == CowState::HATCH_2 ||
-        m_CurrentState == CowState::HATCH_3 ||
-        m_CurrentState == CowState::HATCH_GP_F ||
-        m_CurrentState == CowState::IDLE)
+        
+        //If we are in idle position or moving to idle position, let us go anywhere
+        if(m_CurrentState == CowState::IDLE || m_TargetState == CowState::IDLE)
         {
-            if(m_InTransit)
+            //Check to see if  we are going towards front or back, then move accordingly
+            if (m_TargetState < HATCH_1_B)
             {
-                MoveSafe(CowState::IDLE, 1);
-                return;
-            }
-            if(armPV > 0 || m_CurrentState == CowState::IDLE)
-            {
-                if(m_TargetState == CowState::CARGO_1_F || 
-                m_TargetState == CowState::CARGO_2 ||
-                m_TargetState == CowState::CARGO_3 ||
-                m_TargetState == CowState::CARGO_GP_F ||
-                m_TargetState == CowState::CARGO_HP_F ||
-                m_TargetState == CowState::HATCH_1_F ||
-                m_TargetState == CowState::HATCH_2 ||
-                m_TargetState == CowState::HATCH_3 ||
-                m_TargetState == CowState::HATCH_GP_F ||
-                m_TargetState == CowState::HATCH_HP_F ||
-                m_TargetState == CowState::IDLE)
-                {
-                    MoveSafe(m_TargetState, 1);
-                    return;
-                }
-                else if (m_CurrentState != CowState::IDLE)
-                {
-                    MoveSafe(CowState::IDLE , 1);
-                    m_InTransit = true;
-                    std::cout << "IN TRANSIT\n";
-                    return;
-                }
+                MoveSafe(m_TargetState, 1);
             }
             else
             {
-                MoveSafe(CowState::IDLE, -1);
-                m_InTransit = true;
-                    std::cout << "IN TRANSIT\n";
-                return;
+                MoveSafe(m_TargetState, -1);
             }
         }
-        if (m_CurrentState == CowState::CARGO_HP_B ||
-        m_CurrentState == CowState::CARGO_1_B ||
-        m_CurrentState == CowState::CARGO_GP_B ||
-        m_CurrentState == CowState::HATCH_1_B ||
-        m_CurrentState == CowState::HATCH_GP_B ||
-        m_CurrentState == CowState::HATCH_HP_B ||
-        m_CurrentState == CowState::IDLE)
+        //Check if we are in the front or back
+        else if (armPV > 0)
         {
-            if (m_InTransit)
+            // Check to see if target is in front or back
+            if (m_TargetState < CowState::BACKWARD_STATES)
             {
-                MoveSafe(CowState::IDLE, -1);
-                return;
+                //We are in the front and going to the front so it is safe to proceed
+                MoveSafe (m_TargetState, 1);
             }
-            if (armPV < 0 || m_CurrentState == CowState::IDLE)
-            {
-                if(m_TargetState == CowState::CARGO_HP_B ||
-                m_TargetState == CowState::CARGO_1_B ||
-                m_TargetState == CowState::CARGO_GP_B ||
-                m_TargetState == CowState::HATCH_1_B ||
-                m_TargetState == CowState::HATCH_GP_B ||
-                m_TargetState == CowState::HATCH_HP_B ||
-                m_TargetState == CowState::IDLE)
-                {
-                    MoveSafe(m_TargetState, -1);
-                }
-                else
-                {
-                    MoveSafe(CowState::IDLE, -1);
-                    m_InTransit = true;
-                    std::cout << "IN TRANSIT\n";
-                    return;
-                }
-            }
+            // If we are moving to the back from the front, make sure we return to idle first
             else
             {
                 MoveSafe(CowState::IDLE, 1);
                 m_InTransit = true;
-                std::cout << "IN TRANSIT\n";
-                return;
+            }
+        }
+        //Arm is in back:
+        else
+        {
+            //Check if target is in front or back
+            if (m_TargetState >= BACKWARD_STATES)
+            {
+                //We are in the back and going to the back so it is safe to proceed
+                MoveSafe (m_TargetState, -1);
+            }
+            //If we are moving from the back to the front, make sure we return to idle first
+            else
+            {
+                MoveSafe(CowState::IDLE, -1);
+                m_InTransit = true;
             }
         }
     }

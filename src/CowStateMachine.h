@@ -12,23 +12,25 @@ public:
     enum CowState
     {
         IDLE = 0,
-        CARGO_1_F,
-        CARGO_1_B,
+        MANUAL_CONTROL,
+        FORWARD_STATES,
+        CARGO_1_F = FORWARD_STATES,
         CARGO_2,
         CARGO_3,
         HATCH_1_F,
-        HATCH_1_B,
         HATCH_2,
         HATCH_3,
-        CARGO_HP_F,
-        CARGO_HP_B,
-        HATCH_HP_F,
-        HATCH_HP_B,
-        CARGO_GP_F,
-        CARGO_GP_B,
         HATCH_GP_F,
-        HATCH_GP_B,
-        MANUAL_CONTROL
+        CARGO_HP_F,
+        HATCH_HP_F,
+        CARGO_GP_F,
+        BACKWARD_STATES,
+        HATCH_1_B = BACKWARD_STATES,
+        CARGO_1_B,
+        CARGO_HP_B,
+        CARGO_GP_B,
+        HATCH_HP_B,
+        HATCH_GP_B
     };
 private:
     // enum ElevatorState 
