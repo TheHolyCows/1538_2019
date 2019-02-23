@@ -88,23 +88,23 @@ private:
 
     std::string m_CowStateString [18] = 
     {"IDLE",
+    "MANUAL_CONTROL",
     "CARGO_1_F",
-    "CARGO_1_B",
     "CARGO_2",
     "CARGO_3",
     "HATCH_1_F",
-    "HATCH_1_B",
     "HATCH_2",
     "HATCH_3",
-    "CARGO_HP_F",
-    "CARGO_HP_B",
-    "HATCH_HP_F",
-    "HATCH_HP_B",
-    "CARGO_GP_F",
-    "CARGO_GP_B",
     "HATCH_GP_F",
-    "HATCH_GP_B",
-    "MANUAL_CONTROL"};
+    "CARGO_HP_F",
+    "HATCH_HP_F",
+    "CARGO_GP_F",
+    "HATCH_1_B",
+    "CARGO_1_B",
+    "CARGO_HP_B",
+    "CARGO_GP_B",
+    "HATCH_HP_B",
+    "HATCH_GP_B"};
 
     CowState m_CurrentState;
     CowState m_TargetState;

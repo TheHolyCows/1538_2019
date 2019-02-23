@@ -270,7 +270,6 @@ void CowStateMachine::MoveSafe(CowState state, int direction)
             m_Arm->SetPosition(GetArmSP(state) * direction);
         }
         m_Elevator->SetPosition(GetElevatorSP(state));
-        m_Wrist->SetPosition(GetWristSP(state) * direction);
     }
     else
     {
@@ -328,12 +327,10 @@ void CowStateMachine::handle()
         {
             tempDirection = -1;
         }
-	
         //If our current encoder values are within their tolerance of the target states values, we are at target
         if (fabs(m_Elevator->GetDistance() - GetElevatorSP(m_TargetState)) < CONSTANT("ELEVATOR_TOLERANCE") && fabs(m_Arm->GetPosition() -  (GetArmSP(m_TargetState) * tempDirection)) < CONSTANT("ARM_TOLERANCE") && fabs(m_Wrist->GetPosition() - (GetWristSP(m_TargetState) * tempDirection)) < CONSTANT("WRIST_TOLERANCE"))
         {
             m_CurrentState = m_TargetState;
-            return;
         }
         //If our pid tells us we are in position and we are in transit, it means we are in the idle position
         if (m_Elevator->AtTarget() && m_Arm->AtTarget() && m_InTransit)
@@ -346,7 +343,7 @@ void CowStateMachine::handle()
         if(m_CurrentState == CowState::IDLE || m_TargetState == CowState::IDLE)
         {
             //Check to see if  we are going towards front or back, then move accordingly
-            if (m_TargetState < HATCH_1_B)
+            if (m_TargetState < CowState::BACKWARD_STATES)
             {
                 MoveSafe(m_TargetState, 1);
             }
@@ -356,7 +353,7 @@ void CowStateMachine::handle()
             }
         }
         //Check if we are in the front or back
-        else if (armPV > 0)
+        else if (m_CurrentState < BACKWARD_STATES)
         {
             // Check to see if target is in front or back
             if (m_TargetState < CowState::BACKWARD_STATES)
@@ -388,7 +385,7 @@ void CowStateMachine::handle()
             }
         }
     }
-    else if(m_Arm->GetPosition() > 0)
+    else if(armPV > 0)
     {
         MoveSafe(m_TargetState, 1);
     }
