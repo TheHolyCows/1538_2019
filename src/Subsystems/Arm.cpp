@@ -26,6 +26,7 @@ Arm::Arm(int motorController, double maxSpeed, double upLimit, double downLimit,
 
 	m_Name = name;
     m_PeakOutput = peakOutput;
+    m_CalculateGain = true;
 
 	ResetConstants(upLimit, downLimit, peakOutput);
 	m_Motor->SetInverted(changeDirection);
@@ -53,7 +54,7 @@ void Arm::SetPosition(float position)
     //{
     //    position *= 0.68;
     //}
-
+    m_CalculateGain = true;
 	m_Position = position;
 }
 
@@ -71,7 +72,7 @@ void Arm::ResetConstants(double upLimit, double downLimit, double peakOutput)
 {
 	m_UpLimit = upLimit;
 	m_DownLimit = downLimit;
-    m_PeakOutput = 0;
+    m_PeakOutput = peakOutput;
 	std::string pConstant = m_Name + "_P";
 	std::string iConstant = m_Name + "_I";
 	std::string dConstant = m_Name + "_D";
@@ -96,21 +97,25 @@ void Arm::handle()
 	std::string iConstant = m_Name + "_I";
 	std::string dConstant = m_Name + "_D";
     float slowConstant = 1;
-    if ((GetPosition() > 0))
+    if(m_CalculateGain)
     {
-        if (GetSetpoint()*GetDegreesPerTick() < GetPosition())
+        if ((GetPosition() > 0))
         {
-            slowConstant = CONSTANT(slowConstantStr.c_str());
+            if (GetSetpoint()*GetDegreesPerTick() < GetPosition())
+            {
+                slowConstant = CONSTANT(slowConstantStr.c_str());
+            }
+	        m_Motor->SetPIDGains(CONSTANT(pConstant.c_str())*CONSTANT("DEBUG_PID")*slowConstant, CONSTANT(iConstant.c_str())*CONSTANT("DEBUG_PID")*slowConstant, CONSTANT(dConstant.c_str())*CONSTANT("DEBUG_PID")*slowConstant, 0, m_PeakOutput);
         }
-	    m_Motor->SetPIDGains(CONSTANT(pConstant.c_str())*CONSTANT("DEBUG_PID")*slowConstant, CONSTANT(iConstant.c_str())*CONSTANT("DEBUG_PID")*slowConstant, CONSTANT(dConstant.c_str())*CONSTANT("DEBUG_PID")*slowConstant, 0, m_PeakOutput);
-    }
-    else
-    {
-        if (GetSetpoint()*GetDegreesPerTick() > GetPosition())
+        else
         {
-            slowConstant = CONSTANT(slowConstantStr.c_str());
+            if (GetSetpoint()*GetDegreesPerTick() > GetPosition())
+            {
+                slowConstant = CONSTANT(slowConstantStr.c_str());
+            }
+	        m_Motor->SetPIDGains(CONSTANT(pConstant.c_str())*CONSTANT("DEBUG_PID")*slowConstant, CONSTANT(iConstant.c_str())*CONSTANT("DEBUG_PID")*slowConstant, CONSTANT(dConstant.c_str())*CONSTANT("DEBUG_PID")*slowConstant, 0, m_PeakOutput);
         }
-	    m_Motor->SetPIDGains(CONSTANT(pConstant.c_str())*CONSTANT("DEBUG_PID")*slowConstant, CONSTANT(iConstant.c_str())*CONSTANT("DEBUG_PID")*slowConstant, CONSTANT(dConstant.c_str())*CONSTANT("DEBUG_PID")*slowConstant, 0, m_PeakOutput);
+        m_CalculateGain = false;
     }
 	if(m_Motor)
 	{

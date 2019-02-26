@@ -49,7 +49,8 @@ private:
 	float m_DownLimit;
     float m_PeakOutput;
 	double m_DegreesPerTick;
-	std::string m_Name;
+	bool m_CalculateGain;
+    std::string m_Name;
 };
 
 #endif /* SRC_SUBSYSTEMS_ARM_H_ */
