@@ -30,7 +30,8 @@ public:
         CARGO_HP_B,
         CARGO_GP_B,
         HATCH_HP_B,
-        HATCH_GP_B
+        HATCH_GP_B,
+        HATCH_HP_INTAKE
     };
 private:
     // enum ElevatorState 
@@ -85,26 +86,32 @@ private:
     Arm *m_Arm;
     Arm *m_Wrist;
     void MoveSafe(CowState state, int direction);
+    void Move(CowState);
 
-    std::string m_CowStateString [18] = 
+    float m_CosLookupTable [91];
+
+    bool m_InHatchMode;
+    std::string m_CowStateString [19] = 
     {"IDLE",
+    "MANUAL_CONTROL",
     "CARGO_1_F",
-    "CARGO_1_B",
     "CARGO_2",
     "CARGO_3",
     "HATCH_1_F",
-    "HATCH_1_B",
     "HATCH_2",
     "HATCH_3",
-    "CARGO_HP_F",
-    "CARGO_HP_B",
-    "HATCH_HP_F",
-    "HATCH_HP_B",
-    "CARGO_GP_F",
-    "CARGO_GP_B",
     "HATCH_GP_F",
+    "CARGO_HP_F",
+    "HATCH_HP_F",
+    "CARGO_GP_F",
+    "HATCH_1_B",
+    "CARGO_1_B",
+    "CARGO_HP_B",
+    "CARGO_GP_B",
+    "HATCH_HP_B",
     "HATCH_GP_B",
-    "MANUAL_CONTROL"};
+    "HATCH_HP_INTAKE"
+    };
 
     CowState m_CurrentState;
     CowState m_TargetState;
@@ -135,6 +142,7 @@ public:
     {
         return m_InTransit;
     }
+    void SetHatchMode(bool hatchMode);
 
     void handle();
 

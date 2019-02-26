@@ -29,12 +29,17 @@ public:
     {
         return m_DegreesPerTick;
     }
+    void SetClosedLoopError(int error)
+    {
+        m_Motor->SetClosedLoopError(error);
+    }
+
 	void handle();
 
 	float GetPosition();
 	
 
-	void SetCurrentLimit();
+    void SetCurrentLimit(float peakAmps, float continuousAmps, int peakDuration, int ms);
 	virtual ~Arm();
 
 private:
@@ -42,6 +47,7 @@ private:
 	float m_Position;
 	float m_UpLimit;
 	float m_DownLimit;
+    float m_PeakOutput;
 	double m_DegreesPerTick;
 	std::string m_Name;
 };

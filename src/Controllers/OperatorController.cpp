@@ -9,45 +9,43 @@ OperatorController::OperatorController(CowControlBoard *controlboard)
 
 void OperatorController::handle(CowRobot *bot)
 {
-    bot->GetCanifier()->SetLEDColor(CONSTANT("R_COLOR"), CONSTANT("G_COLOR"), CONSTANT("B_COLOR"));
+    bool forwardDirection = m_CB->GetOperatorButton(8);
+    float r_color = m_CB->GetOperatorGamepadAxis(2);
+    r_color = fabs(r_color*254);
+    float g_color = m_CB->GetDriveAxis(2);
+    g_color = fabs(g_color*254);
+    float b_color = m_CB->GetDriveAxis(0);
+    b_color = fabs(b_color*254);
+    bot->GetCanifier()->SetLEDColor(r_color, g_color, b_color);
     if(m_CB->GetDriveButton(1))
     {
-        bot->TurnToHeading(90);
-        //bot->DriveDistanceWithHeading(0, 12, 0.5);
+        //bot->TurnToHeading(90);
+        bot->DriveDistanceWithHeading(0, 12, 0.5);
     }
     else
     {
-       // if(m_CB->GetSteeringButton(3))
-       // {
-       //     bot->DriveSpeedTurn(m_CB->GetDriveStickY(),
-       //                         (bot->GetLimelight()->GetNumber("tx",0.0)*CONSTANT("LIMELIGHT_X_KP")),
-       //                         1);
-       // }
-       // else
-       // { 
-            bot->DriveSpeedTurn(m_CB->GetDriveStickY(),
-                                m_CB->GetSteeringX(),
-                                m_CB->GetSteeringButton(FAST_TURN));
-      //  }
-    }
-
-    //quickturn
-    if(m_CB->GetDriveButton(1))
-    {
-        bot->TurnToHeading(90);
-        //bot->DriveDistanceWithHeading(0, 12, 0.5);
-    }
-    else
-    {
-        bot->DriveSpeedTurn(m_CB->GetDriveStickY(),
-                            m_CB->GetSteeringX(),
-                            m_CB->GetSteeringButton(FAST_TURN));
+       if(m_CB->GetSteeringButton(3))
+       {
+           bot->DriveSpeedTurn(m_CB->GetDriveStickY(),
+                               (bot->GetLimelight(forwardDirection)->GetNumber("tx",0.0)*CONSTANT("LIMELIGHT_X_KP")),
+                               0);
+       }
+       else
+       { 
+         bot->DriveSpeedTurn(m_CB->GetDriveStickY(),
+                             m_CB->GetSteeringX(),
+                             m_CB->GetSteeringButton(FAST_TURN));
+      }
     }
 
     
-    if(m_CB->GetSteeringButton(3))
+    if(m_CB->GetSteeringButton(1))
     {
         bot->GetStateMachine()->SetState(CowStateMachine::CowState::IDLE);
+    }
+    if (m_CB->GetSteeringButton(3))
+    {
+        bot->GetStateMachine()->SetState(CowStateMachine::CowState::HATCH_HP_INTAKE);
     }
     //if switch is on for forward arm placement
     if(!m_CB->GetOperatorButton(8))
@@ -79,9 +77,11 @@ void OperatorController::handle(CowRobot *bot)
             {
                 bot->GetStateMachine()->SetState(CowStateMachine::CowState::CARGO_HP_F);
             }
+            bot->GetStateMachine()->SetHatchMode(false);
         }
         else 
         {
+            bot->GetStateMachine()->SetHatchMode(true);
             if(m_CB->GetOperatorButton(4))
             {
                 bot->GetStateMachine()->SetState(CowStateMachine::CowState::HATCH_1_F);
@@ -106,6 +106,7 @@ void OperatorController::handle(CowRobot *bot)
             {
                 bot->GetStateMachine()->SetState(CowStateMachine::CowState::HATCH_HP_F);
             }
+            bot->GetStateMachine()->SetHatchMode(true);
         }
     }
     else 
@@ -128,6 +129,7 @@ void OperatorController::handle(CowRobot *bot)
             {
                 bot->GetStateMachine()->SetState(CowStateMachine::CowState::CARGO_HP_B);
             }
+            bot->GetStateMachine()->SetHatchMode(false);
         }
         else 
         {
@@ -145,6 +147,7 @@ void OperatorController::handle(CowRobot *bot)
             {
                 bot->GetStateMachine()->SetState(CowStateMachine::CowState::HATCH_HP_B);
             }
+            bot->GetStateMachine()->SetHatchMode(true);
         }
 
     }
@@ -152,11 +155,25 @@ void OperatorController::handle(CowRobot *bot)
 
     if (m_CB->GetOperatorButton(2))
     {
-        bot->GetIntake()->SetSpeed(-1);
+        if (m_CB->GetOperatorButton(10))
+        {
+            bot->GetIntake()->SetSpeed(-1);
+        }
+        else
+        {
+            bot->GetIntake()->SetSpeed(1);
+        }
     }
     else if (m_CB->GetOperatorButton(1))
     {
-        bot->GetIntake()->SetSpeed(1);
+        if (m_CB->GetOperatorButton(10))
+        {
+            bot->GetIntake()->SetSpeed(1);
+        }
+        else
+        {
+            bot->GetIntake()->SetSpeed(-1);
+        }
     }
     else
     {

@@ -110,5 +110,9 @@ namespace CowLib
     {
     		return m_MotorController;
     }
+    void CowMotorController::SetClosedLoopError(int error)
+    {
+        m_MotorController->ConfigAllowableClosedloopError(0, error);
+    }
 }
 

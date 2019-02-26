@@ -62,7 +62,7 @@ void Elevator::handle()
 
  if (m_Position < currentPosition)
  {
- 	pidOutput *= 0.38;
+ 	pidOutput *= 0.6;
  }
 
 	m_MotorRight->Set(pidOutput);

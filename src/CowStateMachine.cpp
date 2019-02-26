@@ -13,6 +13,12 @@ CowStateMachine::CowStateMachine(Elevator *elevator, Arm *arm, Arm *wrist)
     // m_ArmState = ArmState::IDLE;
     // m_ElevatorState = ElevatorState::IDLE;
     m_InTransit = false;
+    m_InHatchMode = false;
+
+    for (int angle = 0; angle < 91; angle++)
+    {
+        m_CosLookupTable [angle] = cos(angle * 3.14159265/180);
+    }
 
     m_Elevator->SetPosition(GetElevatorSP(m_TargetState));
     m_Arm->SetPosition(GetArmSP(m_TargetState));
@@ -85,6 +91,10 @@ double CowStateMachine::GetElevatorSP(CowState state)
     else if(state == CowState::HATCH_HP_F)
     {
         constantValue = CONSTANT("HATCH_HP_ELV");
+    }
+    else if (state == CowState::HATCH_HP_INTAKE)
+    {
+        constantValue = CONSTANT("HATCH_HP_INTAKE_WRIST");
     }
     else if(state == CowState::IDLE)
     {
@@ -160,6 +170,10 @@ double CowStateMachine::GetArmSP(CowState state)
     {
         constantValue = CONSTANT("HATCH_HP_ARM");
     }
+    else if (state == CowState::HATCH_HP_INTAKE)
+    {
+        constantValue = CONSTANT("HATCH_HP_INTAKE_ARM");
+    }
     else if(state == CowState::IDLE)
     {
         constantValue = CONSTANT("IDLE_ARM");
@@ -234,17 +248,46 @@ double CowStateMachine::GetWristSP(CowState state)
     {
         constantValue = CONSTANT("HATCH_HP_WRIST");
     }
+    else if (state == CowState::HATCH_HP_INTAKE)
+    {
+        constantValue = CONSTANT("HATCH_HP_INTAKE_WRIST");
+    }
     else if(state == CowState::IDLE)
     {
-        constantValue = CONSTANT("IDLE_WRIST");
+        if (m_InHatchMode)
+        {
+            constantValue = CONSTANT("HATCH_IDLE_WRIST");
+        }
+        else
+        {
+            constantValue = CONSTANT("CARGO_IDLE_WRIST");
+        }
     }
 
     return constantValue + m_Arm->GetPosition();
 }
 
-void CowStateMachine::MoveSafe(CowState state, int direction)
+void CowStateMachine::SetHatchMode(bool hatchMode)
 {
+    m_InHatchMode = hatchMode;
+}
+void CowStateMachine::MoveSafe(CowState state, int direction)
+{  
+    float safeElvHeight = 0;
+    if (m_Arm->GetPosition() > 90)
+    {
+        safeElvHeight = CONSTANT("ELEVATOR_MAX");
+    }
+    else
+    {
+        safeElvHeight = m_CosLookupTable [int(m_Arm->GetPosition())] * CONSTANT("ARM_LENGTH");
+    }
+    safeElvHeight -= CONSTANT("ELV_ARM_OFFSET");
     double armSafeZone = CONSTANT("ARM_SAFE_SWING") - CONSTANT("ARM_TOLERANCE");
+    
+    std::cout << "Current safe elv height: " << safeElvHeight << '\n';
+    frc::SmartDashboard::PutNumber("SafeElvHeight:", safeElvHeight);
+
     if(fabs(m_Elevator->GetDistance() - GetElevatorSP(state)) < CONSTANT("ELEVATOR_TOLERANCE"))
     {
         m_Elevator->SetPosition(GetElevatorSP(state));
@@ -270,7 +313,6 @@ void CowStateMachine::MoveSafe(CowState state, int direction)
             m_Arm->SetPosition(GetArmSP(state) * direction);
         }
         m_Elevator->SetPosition(GetElevatorSP(state));
-        m_Wrist->SetPosition(GetWristSP(state) * direction);
     }
     else
     {
@@ -284,7 +326,7 @@ void CowStateMachine::MoveSafe(CowState state, int direction)
             {
                 m_Arm->SetPosition(CONSTANT("ARM_SAFE_SWING") * direction);
             }
-            m_Elevator->SetPosition(CONSTANT("IDLE_ELV"));
+            m_Elevator->SetPosition(safeElvHeight);
         }
         else
         {
@@ -298,8 +340,39 @@ void CowStateMachine::MoveSafe(CowState state, int direction)
             }
             m_Elevator->SetPosition(GetElevatorSP(state));
         }
-        m_Wrist->SetPosition(GetWristSP(state) * direction);
+        if (m_CurrentState != m_TargetState && m_Elevator->GetDistance() > 8)
+        {
+            m_Wrist->SetPosition(CONSTANT("WRIST_TRAVEL_POSITION"));
+        }
+        else
+        {
+            m_Wrist->SetPosition(GetWristSP(state) * direction);
+        }
     }
+    if (m_Elevator->GetDistance() >= GetElevatorSP(CowState::IDLE) - 1)
+    {
+        if (m_Arm->GetSetpoint() > CONSTANT("ARM_SAFE_IDLE"))
+        {
+            m_Arm->SetPosition(CONSTANT("ARM_SAFE_IDLE"));
+        }
+    }
+}
+
+
+void CowStateMachine::Move(CowState state)
+{
+    int direction = 0;
+    if (state < BACKWARD_STATES)
+    {
+        direction = 1;
+    }
+    else
+    {
+        direction = 2;
+    }
+    m_Wrist->SetPosition(GetWristSP(state) * direction);
+    m_Arm->SetPosition(GetArmSP(state) * direction);
+    m_Elevator->SetPosition(GetElevatorSP(state));
 }
 
 void CowStateMachine::handle()
@@ -316,6 +389,11 @@ void CowStateMachine::handle()
         return;
     }
 
+    //if ((m_CurrentState == CowState::HATCH_HP_F || m_CurrentState == CowState::HATCH_HP_B) && m_TargetState == CowState::HATCH_HP_INTAKE)
+    //{
+    //    if(m_CurrentState == CowState)
+    //}
+    
     if (m_CurrentState != m_TargetState)
     {
         //Make a temp direction to use for testing our position
@@ -346,13 +424,27 @@ void CowStateMachine::handle()
         if(m_CurrentState == CowState::IDLE || m_TargetState == CowState::IDLE)
         {
             //Check to see if  we are going towards front or back, then move accordingly
-            if (m_TargetState < HATCH_1_B)
+            if (m_TargetState < CowState::BACKWARD_STATES)
             {
                 MoveSafe(m_TargetState, 1);
             }
             else
             {
                 MoveSafe(m_TargetState, -1);
+            }
+        }
+        //Check if we are trying to score
+        else if (m_TargetState == CowState::HATCH_HP_INTAKE)
+        {
+            //If we are in the front HP position then use positive angles
+            if (m_CurrentState == HATCH_HP_F)
+            {
+                MoveSafe(CowState::HATCH_HP_INTAKE, 1);
+            }
+            //If we are in the back HP position then use negative angles
+            else if (m_CurrentState == CowState::HATCH_HP_B)
+            {
+                MoveSafe(CowState::HATCH_HP_INTAKE, -1);
             }
         }
         //Check if we are in the front or back
@@ -388,13 +480,17 @@ void CowStateMachine::handle()
             }
         }
     }
-    else if(m_Arm->GetPosition() > 0)
-    {
-        MoveSafe(m_TargetState, 1);
-    }
     else
     {
-        MoveSafe(m_TargetState, -1);
+        if (m_TargetState < CowState::BACKWARD_STATES)
+        {
+            MoveSafe(m_TargetState, 1);
+        }
+        else
+        {
+            MoveSafe(m_TargetState, -1);
+        }
+
     }
     //get positions of other subsystems
     // switch (m_TargetState)

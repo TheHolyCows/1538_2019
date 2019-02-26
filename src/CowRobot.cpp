@@ -28,10 +28,10 @@ CowRobot::CowRobot()
     m_RightDriveB->SetNeutralMode(CowLib::CowMotorController::BRAKE);
     m_RightDriveC->SetNeutralMode(CowLib::CowMotorController::BRAKE);
 
-    m_DriveEncoderRight = new frc::Encoder(MXP_QEI_4_A, MXP_QEI_4_B, false, frc::Encoder::k1X);
+    m_DriveEncoderRight = new frc::Encoder(MXP_QEI_5_A, MXP_QEI_5_B, false, frc::Encoder::k1X);
     m_DriveEncoderRight->SetDistancePerPulse(0.052359916666667); // 6*pi/360
 
-    m_DriveEncoderLeft = new frc::Encoder(MXP_QEI_5_A, MXP_QEI_5_B, true, frc::Encoder::k1X);
+    m_DriveEncoderLeft = new frc::Encoder(MXP_QEI_4_A, MXP_QEI_4_B, true, frc::Encoder::k1X);
     m_DriveEncoderLeft->SetDistancePerPulse(0.052359916666667); // 6*pi/360
 
     m_DriveEncoder = m_DriveEncoderRight;
@@ -40,7 +40,8 @@ CowRobot::CowRobot()
     m_Arm = new Arm(6, CONSTANT("ARM_PEAK_OUTPUT"), CONSTANT("ARM_UP_LIMIT"), CONSTANT("ARM_DOWN"), "ARM", true, 0.0357055664, CONSTANT("ARM_PEAK_OUTPUT"));
     m_Intake = new Intake(4);
     m_Wrist = new Arm(5, CONSTANT("WRIST_PEAK_OUTPUT"), CONSTANT("WRIST_UP"), CONSTANT("WRIST_DOWN"), "WRIST", true, 0.087890625, CONSTANT("WRIST_PEAK_OUTPUT"));
-
+    m_Wrist->SetCurrentLimit(CONSTANT("WRIST_PEAK_AMPS"), CONSTANT("WRIST_CONTINUOUS_AMPS"), CONSTANT("WRIST_PEAK_DURATION"), 10);
+    m_Wrist->SetClosedLoopError(20);
     m_StateMachine = new CowStateMachine(m_Elevator, m_Arm, m_Wrist);
 
     m_DetectLoadingStation = false;
@@ -70,7 +71,8 @@ CowRobot::CowRobot()
     m_TipTime = 0;
     m_Tipping = false;
     //limeLight = NetworkTable::GetTable("limelight");
-    m_Limelight = nt::NetworkTableInstance::GetDefault().GetTable("limelight");
+    m_LimelightForward = nt::NetworkTableInstance::GetDefault().GetTable("limelight-front");
+    m_LimelightBackward = nt::NetworkTableInstance::GetDefault().GetTable("limelight-back");
 }
 
 void CowRobot::Reset()
@@ -87,6 +89,7 @@ void CowRobot::Reset()
     m_LoadDetect_LPF->UpdateBeta(CONSTANT("LOAD_DETECT_LPF"));
     m_Elevator->ResetConstants();
     m_Wrist->ResetConstants(CONSTANT("WRIST_UP"), CONSTANT("WRIST_DOWN"), CONSTANT("WRIST_PEAK_OUTPUT"));
+    m_Wrist->SetCurrentLimit(CONSTANT("WRIST_PEAK_AMPS"), CONSTANT("WRIST_CONTINUOUS_AMPS"), CONSTANT("WRIST_PEAK_DURATION"), 10);
     m_Arm->ResetConstants(CONSTANT("ARM_UP_LIMIT"), CONSTANT("ARM_DOWN"), CONSTANT("ARM_PEAK_OUTPUT"));
 }
 
@@ -138,10 +141,6 @@ void CowRobot::handle()
         //          << m_DriveEncoder->Get() << " "
         //      << m_Gyro->GetAngle() << std::endl;std::cout << "Heading: " << m_Gyro->GetAngle() << " " << m_DriveEncoder->GetDistance() << std::endl;
 
-        //std::cout << "tv: " << double(m_Limelight->GetNumber("tv",0.0)) << std::endl;
-        //std::cout << "tx: " << double(m_Limelight->GetNumber("tx",0.0)) << std::endl;
-        //std::cout << "ty: " << double(m_Limelight->GetNumber("ty",0.0)) << std::endl;
-        //std::cout << "ta: " << double(m_Limelight->GetNumber("ta",0.0)) << std::endl;
         //
 
         
@@ -152,7 +151,6 @@ void CowRobot::handle()
         //std::cout << "Wrist: " << m_Wrist->GetPosition() + m_Arm->GetPosition() << " SP: " << m_Wrist->GetSetpoint() << std::endl;
 
         //std::cout << "Elevator at target: " << m_Elevator->AtTarget() << " Arm at target: " << m_Arm-> AtTarget() << " Wrist at target: " << m_Wrist->AtTarget() << std::endl << std::endl;
-        std::cout << m_StateMachine->InTransit();
     }
 
     frc::SmartDashboard::PutNumber("Elevator SP", m_Elevator->GetSetPoint());
@@ -162,7 +160,7 @@ void CowRobot::handle()
     frc::SmartDashboard::PutNumber("Arm PV", m_Arm->GetPosition());
     frc::SmartDashboard::PutNumber("Arm SP", m_Arm->GetSetpoint() * m_Arm->GetDegreesPerTick());
     frc::SmartDashboard::PutNumber("Wrist PV", m_Wrist->GetPosition() - m_Arm->GetPosition());
-    frc::SmartDashboard::PutNumber("Wrist SP", (m_Wrist->GetSetpoint() * m_Arm->GetDegreesPerTick()) - m_Arm->GetPosition());
+    frc::SmartDashboard::PutNumber("Wrist SP", (m_Wrist->GetSetpoint() * m_Wrist->GetDegreesPerTick()) - m_Arm->GetPosition());
     frc::SmartDashboard::PutNumber("Elevator At Target:", m_Elevator->AtTarget());
     frc::SmartDashboard::PutNumber("Arm At Target:", m_Arm->AtTarget());
     frc::SmartDashboard::PutNumber("Wrist At Target:", m_Wrist->AtTarget());

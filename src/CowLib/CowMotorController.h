@@ -32,6 +32,7 @@ namespace CowLib
         CowMotorController(int deviceNum);
         virtual ~CowMotorController();
 
+        void SetClosedLoopError(int error);
         void SetNeutralMode(CowNeutralMode);
         enum CowNeutralMode GetNeutralMode();
         void SetControlMode(CowControlMode);

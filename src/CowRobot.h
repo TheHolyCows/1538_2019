@@ -79,7 +79,8 @@ private:
 
     float m_TipTime;
     bool m_Tipping;
-    std::shared_ptr<nt::NetworkTable> m_Limelight;
+    std::shared_ptr<nt::NetworkTable> m_LimelightForward;
+    std::shared_ptr<nt::NetworkTable> m_LimelightBackward;
 
 public:
     CowRobot();
@@ -105,9 +106,16 @@ public:
         m_DetectLoadingStation = false;
     }
 
-    std::shared_ptr<nt::NetworkTable> GetLimelight()
+    std::shared_ptr<nt::NetworkTable> GetLimelight(bool direction)
     {
-        return m_Limelight;
+        if (!direction)
+        {   
+            return m_LimelightForward;
+        }
+        else
+        {
+            return m_LimelightBackward;
+        }
     }
     void QuickTurn(float turn);
     
