@@ -5,6 +5,7 @@
 #include "Subsystems/Elevator.h"
 #include "Subsystems/Arm.h"
 #include <string>
+#include <iostream>
 
 class CowStateMachine
 {
@@ -126,10 +127,7 @@ private:
 public:
     CowStateMachine(Elevator *elevator, Arm *arm, Arm *wrist);
 
-    void SetState(CowState state)
-    {
-        m_TargetState = state;
-    }
+    void SetState(CowState state);
     std::string GetTargetStateString()
     {
         return m_CowStateString [m_TargetState];

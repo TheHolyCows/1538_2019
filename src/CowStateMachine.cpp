@@ -180,6 +180,25 @@ double CowStateMachine::GetArmSP(CowState state)
     }
     return constantValue;
 }
+ void CowStateMachine::SetState(CowState state)
+     {
+         std::cout << "In set state" << std::endl;
+         if (state < CowState::BACKWARD_STATES && m_CurrentState >= CowState::BACKWARD_STATES)
+         {
+             m_TargetState = CowState::IDLE;
+             std::cout << "In first case state" << std::endl;
+         }
+         else if (state >= CowState::BACKWARD_STATES && m_CurrentState < CowState::BACKWARD_STATES && m_CurrentState >= CowState::FORWARD_STATES)
+         {
+             m_TargetState = CowState::IDLE;
+             std::cout << "In first case state" << std::endl;
+         }
+         else
+         {
+             m_TargetState = state;
+             std::cout << "CLEARRR" << std::endl;
+         }
+     }
 
 double CowStateMachine::GetWristSP(CowState state)
 {
@@ -264,7 +283,7 @@ double CowStateMachine::GetWristSP(CowState state)
         }
     }
 
-    return constantValue + m_Arm->GetPosition();
+    return constantValue + fabs(m_Arm->GetPosition());
 }
 
 void CowStateMachine::SetHatchMode(bool hatchMode)
@@ -273,25 +292,29 @@ void CowStateMachine::SetHatchMode(bool hatchMode)
 }
 void CowStateMachine::MoveSafe(CowState state, int direction)
 {  
+    int wristDirection = direction;
+    if (m_InHatchMode)
+    {
+        wristDirection = 1;
+    }
     float safeElvHeight = 0;
-    if (m_Arm->GetPosition() > 90)
+    if (fabs(m_Arm->GetPosition()) > 90)
     {
         safeElvHeight = CONSTANT("ELEVATOR_MAX");
     }
     else
     {
-        safeElvHeight = m_CosLookupTable [int(m_Arm->GetPosition())] * CONSTANT("ARM_LENGTH");
+        safeElvHeight = m_CosLookupTable [int(fabs(m_Arm->GetPosition()))] * CONSTANT("ARM_LENGTH");
     }
     safeElvHeight -= CONSTANT("ELV_ARM_OFFSET");
     double armSafeZone = CONSTANT("ARM_SAFE_SWING") - CONSTANT("ARM_TOLERANCE");
     
-    std::cout << "Current safe elv height: " << safeElvHeight << '\n';
     frc::SmartDashboard::PutNumber("SafeElvHeight:", safeElvHeight);
 
     if(fabs(m_Elevator->GetDistance() - GetElevatorSP(state)) < CONSTANT("ELEVATOR_TOLERANCE"))
     {
         m_Elevator->SetPosition(GetElevatorSP(state));
-        m_Wrist->SetPosition(GetWristSP(state) * direction);
+        m_Wrist->SetPosition(GetWristSP(state) * wristDirection);
         m_Arm->SetPosition(GetArmSP(state) * direction);
         return;
     }
@@ -330,7 +353,7 @@ void CowStateMachine::MoveSafe(CowState state, int direction)
         }
         else
         {
-            if (fabs(GetArmSP(state)) >= CONSTANT("ARM_SAFE_SWING"))
+            if (fabs(GetArmSP(state)) >= CONSTANT("ARM_SAFE_SWING") + m_Arm->GetPosition())
             {
                 m_Arm->SetPosition(GetArmSP(state) * direction);
             }
@@ -340,20 +363,20 @@ void CowStateMachine::MoveSafe(CowState state, int direction)
             }
             m_Elevator->SetPosition(GetElevatorSP(state));
         }
-        if (m_CurrentState != m_TargetState && m_Elevator->GetDistance() > 8)
+        if (m_CurrentState != m_TargetState && m_Elevator->GetDistance() > CONSTANT("ELV_SAFE_WRIST"))
         {
             m_Wrist->SetPosition(CONSTANT("WRIST_TRAVEL_POSITION"));
         }
         else
         {
-            m_Wrist->SetPosition(GetWristSP(state) * direction);
+            m_Wrist->SetPosition(GetWristSP(state) * wristDirection);
         }
     }
-    if (m_Elevator->GetDistance() >= GetElevatorSP(CowState::IDLE) - 1)
+    if (m_Elevator->GetDistance() > CONSTANT("CROSSBAR_HEIGHT"))
     {
-        if (m_Arm->GetSetpoint() > CONSTANT("ARM_SAFE_IDLE"))
+        if (m_Arm->GetSetpoint() < -CONSTANT("ARM_SAFE_IDLE"))
         {
-            m_Arm->SetPosition(CONSTANT("ARM_SAFE_IDLE"));
+            m_Arm->SetPosition(CONSTANT("ARM_SAFE_IDLE") * direction);
         }
     }
 }
@@ -408,7 +431,7 @@ void CowStateMachine::handle()
         }
 	
         //If our current encoder values are within their tolerance of the target states values, we are at target
-        if (fabs(m_Elevator->GetDistance() - GetElevatorSP(m_TargetState)) < CONSTANT("ELEVATOR_TOLERANCE") && fabs(m_Arm->GetPosition() -  (GetArmSP(m_TargetState) * tempDirection)) < CONSTANT("ARM_TOLERANCE") && fabs(m_Wrist->GetPosition() - (GetWristSP(m_TargetState) * tempDirection)) < CONSTANT("WRIST_TOLERANCE"))
+        if (fabs(m_Elevator->GetDistance() - GetElevatorSP(m_TargetState)) < CONSTANT("ELEVATOR_TOLERANCE") && fabs(m_Arm->GetPosition() - ((GetArmSP(m_TargetState) * tempDirection))) < CONSTANT("ARM_TOLERANCE") && fabs(m_Wrist->GetPosition() - (GetWristSP(m_TargetState))) < CONSTANT("WRIST_TOLERANCE"))
         {
             m_CurrentState = m_TargetState;
             return;

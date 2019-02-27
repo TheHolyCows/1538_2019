@@ -43,10 +43,6 @@ void OperatorController::handle(CowRobot *bot)
     {
         bot->GetStateMachine()->SetState(CowStateMachine::CowState::IDLE);
     }
-    if (m_CB->GetSteeringButton(3))
-    {
-        bot->GetStateMachine()->SetState(CowStateMachine::CowState::HATCH_HP_INTAKE);
-    }
     //if switch is on for forward arm placement
     if(!m_CB->GetOperatorButton(8))
     {

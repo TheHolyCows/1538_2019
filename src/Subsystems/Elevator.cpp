@@ -8,6 +8,7 @@
 #include <Subsystems/Elevator.h>
 #include <String>
 #include <iostream>
+#include "../CowLib/Utility.h"
 
 Elevator::Elevator(int motorRight, int motorLeft, int encoderA, int encoderB)
 {
@@ -60,10 +61,11 @@ void Elevator::handle()
 	float currentPosition = m_Encoder->GetDistance();
 	float pidOutput = m_PID->Calculate(currentPosition) * CONSTANT("DEBUG_PID");
 
- if (m_Position < currentPosition)
- {
- 	pidOutput *= 0.6;
- }
+    if (m_Position < currentPosition)
+    {
+ 	    pidOutput *= 0.38;
+        pidOutput = CowLib::LimitMix(pidOutput, CONSTANT("ELEVATOR_PEAK_OUTPUT"));
+    }
 
 	m_MotorRight->Set(pidOutput);
 	m_MotorLeft->Set(-pidOutput);

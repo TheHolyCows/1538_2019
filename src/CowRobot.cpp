@@ -37,9 +37,9 @@ CowRobot::CowRobot()
     m_DriveEncoder = m_DriveEncoderRight;
 
     m_Elevator = new Elevator (2, 3, MXP_QEI_3_A, MXP_QEI_3_B);
-    m_Arm = new Arm(6, CONSTANT("ARM_PEAK_OUTPUT"), CONSTANT("ARM_UP_LIMIT"), CONSTANT("ARM_DOWN"), "ARM", true, 0.0357055664, CONSTANT("ARM_PEAK_OUTPUT"));
+    m_Arm = new Arm(6, CONSTANT("ARM_PEAK_OUTPUT"), CONSTANT("ARM_UP_LIMIT"), CONSTANT("ARM_DOWN"), "ARM", true, CONSTANT("ARM_GEAR_RATIO") * (360.0/4096.0), CONSTANT("ARM_PEAK_OUTPUT"));
     m_Intake = new Intake(4);
-    m_Wrist = new Arm(5, CONSTANT("WRIST_PEAK_OUTPUT"), CONSTANT("WRIST_UP"), CONSTANT("WRIST_DOWN"), "WRIST", true, 0.087890625, CONSTANT("WRIST_PEAK_OUTPUT"));
+    m_Wrist = new Arm(5, CONSTANT("WRIST_PEAK_OUTPUT"), CONSTANT("WRIST_UP"), CONSTANT("WRIST_DOWN"), "WRIST", true, CONSTANT("WRIST_GEAR_RATIO") * (360.0/4096.0), CONSTANT("WRIST_PEAK_OUTPUT"));
     m_Wrist->SetCurrentLimit(CONSTANT("WRIST_PEAK_AMPS"), CONSTANT("WRIST_CONTINUOUS_AMPS"), CONSTANT("WRIST_PEAK_DURATION"), 10);
     m_Wrist->SetClosedLoopError(20);
     m_StateMachine = new CowStateMachine(m_Elevator, m_Arm, m_Wrist);
