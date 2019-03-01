@@ -5,17 +5,33 @@
 #include "../CowConstants.h"
 #include <frc/WPILib.h>
 #include <frc/Timer.h>
+#include "../CowLib/CowLPF.h"
+#include "../CowLib/CowPID.h"
 
 class Intake
 {
 private:
     CowLib::CowMotorController *m_Motor;
     float m_Speed;
+    bool m_LimitCurrent;
+    double m_Current;
+    CowLib::CowLPF* m_CurrentLPF; 
+    CowLib::CowPID* m_PID;
+    bool m_Hold;
 
 public:
     Intake(int morotController);
-    void SetSpeed(float speed);
+    void SetSpeed(float speed, bool limitCurrent);
+    double GetCurrent()
+    {
+        return m_Current;
+    }
+    void ReleaseHold()
+    {
+        m_Hold = false;
+    }
     void handle();
+    void ResetConstants();
     virtual ~Intake();
 };
 

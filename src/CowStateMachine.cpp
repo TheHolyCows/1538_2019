@@ -180,25 +180,27 @@ double CowStateMachine::GetArmSP(CowState state)
     }
     return constantValue;
 }
- void CowStateMachine::SetState(CowState state)
-     {
-         std::cout << "In set state" << std::endl;
-         if (state < CowState::BACKWARD_STATES && m_CurrentState >= CowState::BACKWARD_STATES)
-         {
-             m_TargetState = CowState::IDLE;
-             std::cout << "In first case state" << std::endl;
-         }
-         else if (state >= CowState::BACKWARD_STATES && m_CurrentState < CowState::BACKWARD_STATES && m_CurrentState >= CowState::FORWARD_STATES)
-         {
-             m_TargetState = CowState::IDLE;
-             std::cout << "In first case state" << std::endl;
-         }
-         else
-         {
-             m_TargetState = state;
-             std::cout << "CLEARRR" << std::endl;
-         }
-     }
+void CowStateMachine::SetState(CowState state)
+{
+    m_TargetState = state;
+    return;
+    std::cout << "In set state" << std::endl;
+    if (state < CowState::BACKWARD_STATES && m_CurrentState >= CowState::BACKWARD_STATES)
+    {
+        m_TargetState = CowState::IDLE;
+        std::cout << "In first case state" << std::endl;
+    }
+    else if (state >= CowState::BACKWARD_STATES && m_CurrentState < CowState::BACKWARD_STATES && m_CurrentState >= CowState::FORWARD_STATES)
+    {
+        m_TargetState = CowState::IDLE;
+        std::cout << "In first case state" << std::endl;
+    }
+    else
+    {
+        m_TargetState = state;
+        std::cout << "CLEARRR" << std::endl;
+    }
+}
 
 double CowStateMachine::GetWristSP(CowState state)
 {
@@ -283,7 +285,7 @@ double CowStateMachine::GetWristSP(CowState state)
         }
     }
 
-    return constantValue + fabs(m_Arm->GetPosition());
+    return constantValue + m_Arm->GetPosition();
 }
 
 void CowStateMachine::SetHatchMode(bool hatchMode)
@@ -295,7 +297,7 @@ void CowStateMachine::MoveSafe(CowState state, int direction)
     int wristDirection = direction;
     if (m_InHatchMode)
     {
-        wristDirection = 1;
+        //wristDirection = 1;
     }
     float safeElvHeight = 0;
     if (fabs(m_Arm->GetPosition()) > 90)
@@ -444,10 +446,21 @@ void CowStateMachine::handle()
         }
         
         //If we are in idle position or moving to idle position, let us go anywhere
-        if(m_CurrentState == CowState::IDLE || m_TargetState == CowState::IDLE)
+        if(m_CurrentState == CowState::IDLE)
         {
             //Check to see if  we are going towards front or back, then move accordingly
             if (m_TargetState < CowState::BACKWARD_STATES)
+            {
+                MoveSafe(m_TargetState, 1);
+            }
+            else
+            {
+                MoveSafe(m_TargetState, -1);
+            }
+        }
+        else if (m_TargetState == CowState::IDLE)
+        {
+            if (m_CurrentState < CowState::BACKWARD_STATES)
             {
                 MoveSafe(m_TargetState, 1);
             }
@@ -471,7 +484,7 @@ void CowStateMachine::handle()
             }
         }
         //Check if we are in the front or back
-        else if (armPV > 0)
+        else if (m_CurrentState < CowState::BACKWARD_STATES)
         {
             // Check to see if target is in front or back
             if (m_TargetState < CowState::BACKWARD_STATES)

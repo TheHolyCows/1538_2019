@@ -149,31 +149,42 @@ void OperatorController::handle(CowRobot *bot)
     }
 
 
+    //Intake
     if (m_CB->GetOperatorButton(2))
     {
+        //Switch 10 on = cargo
         if (m_CB->GetOperatorButton(10))
         {
-            bot->GetIntake()->SetSpeed(-1);
+            bot->GetIntake()->SetSpeed(-1, true);
         }
         else
         {
-            bot->GetIntake()->SetSpeed(1);
+            bot->GetIntake()->SetSpeed(1, false);
         }
     }
+    //Exhaust
     else if (m_CB->GetOperatorButton(1))
     {
         if (m_CB->GetOperatorButton(10))
         {
-            bot->GetIntake()->SetSpeed(1);
+            bot->GetIntake()->SetSpeed(1, true);
         }
         else
         {
-            bot->GetIntake()->SetSpeed(-1);
+            bot->GetIntake()->SetSpeed(-1, false);
         }
+        bot->GetIntake()->ReleaseHold();
     }
     else
     {
-        bot->GetIntake()->SetSpeed(0);
+        if (m_CB->GetOperatorButton(10))
+        {
+            bot->GetIntake()->SetSpeed(0, true);
+        }
+        else
+        {
+            bot->GetIntake()->SetSpeed(0, false);
+        }
     }
     
     // if(m_CB->GetOperatorButton(6))

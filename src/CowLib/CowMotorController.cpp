@@ -9,6 +9,7 @@ namespace CowLib
         m_CowControlMode = CowMotorController::PERCENTVBUS;
         m_CowNeutralMode = CowMotorController::COAST;
         m_MotorController = new TalonSRX(deviceNum);
+        m_MotorController->EnableCurrentLimit(false);
     }
 
     CowMotorController::~CowMotorController()
@@ -96,6 +97,19 @@ namespace CowLib
     }
 
     //void CowMotorController
+
+    void CowMotorController::SetPeakCurrent(int amps, int ms)
+    {
+        m_MotorController->ConfigContinuousCurrentLimit(0);
+        m_MotorController->ConfigPeakCurrentLimit(amps);
+        m_MotorController->ConfigPeakCurrentDuration(ms);
+        m_MotorController->EnableCurrentLimit(true);
+    }
+    
+    double CowMotorController::GetOutputCurrent()
+    {
+        return m_MotorController->GetOutputCurrent();
+    }
 
     void CowMotorController::Set(float value)
     {

@@ -41,6 +41,8 @@ namespace CowLib
         void SetPIDGains(float pGain, float iGain, float dGain, float fGain, double peakOutput);
         void Set(float);
         void SetInverted(bool Value);
+        void SetPeakCurrent(int amps, int ms);
+        double GetOutputCurrent();
         TalonSRX *GetInternalMotor();
     private:
         TalonSRX *m_MotorController;

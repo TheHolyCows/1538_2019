@@ -91,6 +91,7 @@ void CowRobot::Reset()
     m_Wrist->ResetConstants(CONSTANT("WRIST_UP"), CONSTANT("WRIST_DOWN"), CONSTANT("WRIST_PEAK_OUTPUT"));
     m_Wrist->SetCurrentLimit(CONSTANT("WRIST_PEAK_AMPS"), CONSTANT("WRIST_CONTINUOUS_AMPS"), CONSTANT("WRIST_PEAK_DURATION"), 10);
     m_Arm->ResetConstants(CONSTANT("ARM_UP_LIMIT"), CONSTANT("ARM_DOWN"), CONSTANT("ARM_PEAK_OUTPUT"));
+    m_Intake->ResetConstants();
 }
 
 void CowRobot::SetController(GenericController *controller)
@@ -165,6 +166,7 @@ void CowRobot::handle()
     frc::SmartDashboard::PutNumber("Arm At Target:", m_Arm->AtTarget());
     frc::SmartDashboard::PutNumber("Wrist At Target:", m_Wrist->AtTarget());
     frc::SmartDashboard::PutNumber("In Transit:", m_StateMachine->InTransit());
+    frc::SmartDashboard::PutNumber("Intake Current:", m_Intake->GetCurrent());
     // double LoadingStationLPF = m_LoadDetect_LPF->Calculate(0);
     // //std::cout << "start time: " << m_StartTime << " match time: " << m_MatchTime << std::endl;
     // if (m_DetectLoadingStation)
