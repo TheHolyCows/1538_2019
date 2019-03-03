@@ -29,6 +29,7 @@ public:
     void ReleaseHold()
     {
         m_Hold = false;
+        m_CurrentLPF->UpdateBeta(CONSTANT("INTAKE_CURRENT_LPF"));
     }
     void handle();
     void ResetConstants();

@@ -73,11 +73,19 @@ void OperatorController::handle(CowRobot *bot)
             {
                 bot->GetStateMachine()->SetState(CowStateMachine::CowState::CARGO_HP_F);
             }
+            if (m_CB->GetOperatorButton(3))
+            {
+                bot->GetStateMachine()->SetState(CowStateMachine::CowState::CARGO_CS_F);
+            }
             bot->GetStateMachine()->SetHatchMode(false);
         }
         else 
         {
             bot->GetStateMachine()->SetHatchMode(true);
+            if (m_CB->GetOperatorButton(3))
+            {
+                bot->GetStateMachine()->SetState(CowStateMachine::CowState::HATCH_SCORE);
+            }
             if(m_CB->GetOperatorButton(4))
             {
                 bot->GetStateMachine()->SetState(CowStateMachine::CowState::HATCH_1_F);
@@ -125,10 +133,19 @@ void OperatorController::handle(CowRobot *bot)
             {
                 bot->GetStateMachine()->SetState(CowStateMachine::CowState::CARGO_HP_B);
             }
+
+            if (m_CB->GetOperatorButton(3))
+            {
+                bot->GetStateMachine()->SetState(CowStateMachine::CowState::CARGO_CS_B);
+            }
             bot->GetStateMachine()->SetHatchMode(false);
         }
         else 
         {
+            if (m_CB->GetOperatorButton(3))
+            {
+                bot->GetStateMachine()->SetState(CowStateMachine::CowState::HATCH_SCORE);
+            }
             if(m_CB->GetOperatorButton(4))
             {
                 bot->GetStateMachine()->SetState(CowStateMachine::CowState::HATCH_1_B);
@@ -215,5 +232,6 @@ void OperatorController::handle(CowRobot *bot)
         float manualElevatorPosition = bot->GetElevator()->GetSetPoint() + (elevatorJoystickDeadband * .4);
         bot->GetElevator()->SetPosition(manualElevatorPosition);
     }
+
 }
 

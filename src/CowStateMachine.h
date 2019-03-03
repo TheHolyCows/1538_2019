@@ -14,6 +14,7 @@ public:
     {
         IDLE = 0,
         MANUAL_CONTROL,
+        HATCH_SCORE,
         FORWARD_STATES,
         CARGO_1_F = FORWARD_STATES,
         CARGO_2,
@@ -25,6 +26,7 @@ public:
         CARGO_HP_F,
         HATCH_HP_F,
         CARGO_GP_F,
+        CARGO_CS_F,
         BACKWARD_STATES,
         HATCH_1_B = BACKWARD_STATES,
         CARGO_1_B,
@@ -32,6 +34,7 @@ public:
         CARGO_GP_B,
         HATCH_HP_B,
         HATCH_GP_B,
+        CARGO_CS_B,
         HATCH_HP_INTAKE
     };
 private:
@@ -87,14 +90,15 @@ private:
     Arm *m_Arm;
     Arm *m_Wrist;
     void MoveSafe(CowState state, int direction);
-    void Move(CowState);
+    void ScoreHatch();
 
     float m_CosLookupTable [91];
 
     bool m_InHatchMode;
-    std::string m_CowStateString [19] = 
+    std::string m_CowStateString [22] = 
     {"IDLE",
     "MANUAL_CONTROL",
+    "HATCH_SCORE",
     "CARGO_1_F",
     "CARGO_2",
     "CARGO_3",
@@ -105,12 +109,14 @@ private:
     "CARGO_HP_F",
     "HATCH_HP_F",
     "CARGO_GP_F",
+    "CARGO_CS_F",
     "HATCH_1_B",
     "CARGO_1_B",
     "CARGO_HP_B",
     "CARGO_GP_B",
     "HATCH_HP_B",
     "HATCH_GP_B",
+    "CARGO_CS_B"
     "HATCH_HP_INTAKE"
     };
 
@@ -123,7 +129,7 @@ private:
 
     double GetElevatorSP(CowState state);
     double GetArmSP(CowState state);
-    double GetWristSP(CowState state);
+    double GetWristSP(CowState state, int direction);
 public:
     CowStateMachine(Elevator *elevator, Arm *arm, Arm *wrist);
 

@@ -22,7 +22,7 @@ CowStateMachine::CowStateMachine(Elevator *elevator, Arm *arm, Arm *wrist)
 
     m_Elevator->SetPosition(GetElevatorSP(m_TargetState));
     m_Arm->SetPosition(GetArmSP(m_TargetState));
-    m_Wrist->SetPosition(GetWristSP(m_TargetState));
+    m_Wrist->SetPosition(GetWristSP(m_TargetState, 1));
 }
 
 double CowStateMachine::GetElevatorSP(CowState state)
@@ -94,7 +94,15 @@ double CowStateMachine::GetElevatorSP(CowState state)
     }
     else if (state == CowState::HATCH_HP_INTAKE)
     {
-        constantValue = CONSTANT("HATCH_HP_INTAKE_WRIST");
+        constantValue = CONSTANT("HATCH_HP_INTAKE_ELV");
+    }
+    else if (state == CowState::CARGO_CS_F)
+    {
+        constantValue = CONSTANT("CARGO_CS_ELV");
+    }
+    else if (state == CowState::CARGO_CS_B)
+    {
+        constantValue = CONSTANT("CARGO_CS_ELV");
     }
     else if(state == CowState::IDLE)
     {
@@ -174,6 +182,14 @@ double CowStateMachine::GetArmSP(CowState state)
     {
         constantValue = CONSTANT("HATCH_HP_INTAKE_ARM");
     }
+    else if (state == CowState::CARGO_CS_F)
+    {
+        constantValue = CONSTANT("CARGO_CS_ARM");
+    }
+    else if (state == CowState::CARGO_CS_B)
+    {
+        constantValue = CONSTANT("CARGO_CS_ARM");
+    }
     else if(state == CowState::IDLE)
     {
         constantValue = CONSTANT("IDLE_ARM");
@@ -202,7 +218,7 @@ void CowStateMachine::SetState(CowState state)
     }
 }
 
-double CowStateMachine::GetWristSP(CowState state)
+double CowStateMachine::GetWristSP(CowState state, int direction)
 {
     double constantValue = 0;
     if(state == CowState::CARGO_1_B)
@@ -273,6 +289,14 @@ double CowStateMachine::GetWristSP(CowState state)
     {
         constantValue = CONSTANT("HATCH_HP_INTAKE_WRIST");
     }
+    else if (state == CowState::CARGO_CS_F)
+    {
+        constantValue = CONSTANT("CARGO_CS_WRIST");
+    }
+    else if (state == CowState::CARGO_CS_B)
+    {
+        constantValue = CONSTANT("CARGO_CS_WRIST");
+    }
     else if(state == CowState::IDLE)
     {
         if (m_InHatchMode)
@@ -285,7 +309,7 @@ double CowStateMachine::GetWristSP(CowState state)
         }
     }
 
-    return constantValue + m_Arm->GetPosition();
+    return (direction * constantValue) + m_Arm->GetPosition();
 }
 
 void CowStateMachine::SetHatchMode(bool hatchMode)
@@ -316,22 +340,33 @@ void CowStateMachine::MoveSafe(CowState state, int direction)
     if(fabs(m_Elevator->GetDistance() - GetElevatorSP(state)) < CONSTANT("ELEVATOR_TOLERANCE"))
     {
         m_Elevator->SetPosition(GetElevatorSP(state));
-        m_Wrist->SetPosition(GetWristSP(state) * wristDirection);
+        m_Wrist->SetPosition(GetWristSP(state, direction) * direction);
         m_Arm->SetPosition(GetArmSP(state) * direction);
         return;
     }
     if (GetElevatorSP(state) >= m_Elevator->GetDistance())
     {
-        if (m_Elevator->GetDistance() < CONSTANT("ELV_SAFE_SWING"))
+        if (m_Elevator->GetDistance() < CONSTANT("ELV_SAFE_SWING_LOW"))
         {
-            if (GetArmSP(state) < CONSTANT("ARM_SAFE_SWING"))
+            if (fabs(GetArmSP(state)) < CONSTANT("ARM_SAFE_SWING_LOW"))
             {
-                m_Arm->SetPosition(CONSTANT("ARM_SAFE_SWING") * direction);
+                m_Arm->SetPosition(CONSTANT("ARM_SAFE_SWING_LOW") * direction);
             }
             else
             {
                 m_Arm->SetPosition(GetArmSP(state) * direction);
             }
+        }
+        else if (m_Elevator->GetDistance() < CONSTANT("ELV_SAFE_SWING_HIGH"))
+        {
+            if (fabs(GetArmSP(state)) < CONSTANT("ARM_SAFE_SWING_HIGH"))
+             {
+                 m_Arm->SetPosition(CONSTANT("ARM_SAFE_SWING_HIGH") * direction);
+             }
+             else
+             {
+                 m_Arm->SetPosition(GetArmSP(state) * direction);
+             }
         }
         else
         {
@@ -365,13 +400,13 @@ void CowStateMachine::MoveSafe(CowState state, int direction)
             }
             m_Elevator->SetPosition(GetElevatorSP(state));
         }
-        if (m_CurrentState != m_TargetState && m_Elevator->GetDistance() > CONSTANT("ELV_SAFE_WRIST"))
+        if (m_CurrentState != m_TargetState && m_Arm->GetPosition() > CONSTANT("ARM_SAFE_WRIST"))
         {
-            m_Wrist->SetPosition(CONSTANT("WRIST_TRAVEL_POSITION"));
+            m_Wrist->SetPosition(CONSTANT("WRIST_TRAVEL_POSITION") + m_Arm->GetPosition());
         }
         else
         {
-            m_Wrist->SetPosition(GetWristSP(state) * wristDirection);
+            m_Wrist->SetPosition(GetWristSP(state, direction) * direction);
         }
     }
     if (m_Elevator->GetDistance() > CONSTANT("CROSSBAR_HEIGHT"))
@@ -383,21 +418,33 @@ void CowStateMachine::MoveSafe(CowState state, int direction)
     }
 }
 
-
-void CowStateMachine::Move(CowState state)
+void CowStateMachine::ScoreHatch()
 {
-    int direction = 0;
-    if (state < BACKWARD_STATES)
+    double armPV = m_Arm->GetPosition();
+    //Check our current state and move to the apropriate scoring position
+    switch (m_CurrentState)
     {
-        direction = 1;
+        case CowState::HATCH_1_F:
+            m_Elevator->SetPosition(CONSTANT("SCORE_HATCH_1_ELV"));
+            m_Arm->SetPosition(CONSTANT("SCORE_HATCH_1_ARM"));
+            m_Wrist->SetPosition(CONSTANT("SCORE_HATCH_1_WRIST") + armPV);
+            break;
+        case CowState::HATCH_1_B:
+            m_Elevator->SetPosition(CONSTANT("SCORE_HATCH_1_ELV"));
+            m_Arm->SetPosition(CONSTANT("SCORE_HATCH_1_ARM") * -1);
+            m_Wrist->SetPosition((CONSTANT("SCORE_HATCH_1_WRIST") * -1) + armPV);
+            break;
+        case CowState::HATCH_2:
+            m_Elevator->SetPosition(CONSTANT("SCORE_HATCH_2_ELV"));
+            m_Arm->SetPosition(CONSTANT("SCORE_HATCH_2_ARM"));
+            m_Wrist->SetPosition(CONSTANT("SCORE_HATCH_2_WRIST") + armPV);
+            break;
+        case CowState::HATCH_3:
+            m_Elevator->SetPosition(CONSTANT("SCORE_HATCH_3_ELV"));
+            m_Arm->SetPosition(CONSTANT("SCORE_HATCH_3_ARM"));
+            m_Wrist->SetPosition(CONSTANT("SCORE_HATCH_1_WRIST") + armPV);
+            break;
     }
-    else
-    {
-        direction = 2;
-    }
-    m_Wrist->SetPosition(GetWristSP(state) * direction);
-    m_Arm->SetPosition(GetArmSP(state) * direction);
-    m_Elevator->SetPosition(GetElevatorSP(state));
 }
 
 void CowStateMachine::handle()
@@ -433,7 +480,7 @@ void CowStateMachine::handle()
         }
 	
         //If our current encoder values are within their tolerance of the target states values, we are at target
-        if (fabs(m_Elevator->GetDistance() - GetElevatorSP(m_TargetState)) < CONSTANT("ELEVATOR_TOLERANCE") && fabs(m_Arm->GetPosition() - ((GetArmSP(m_TargetState) * tempDirection))) < CONSTANT("ARM_TOLERANCE") && fabs(m_Wrist->GetPosition() - (GetWristSP(m_TargetState))) < CONSTANT("WRIST_TOLERANCE"))
+        if (fabs(m_Elevator->GetDistance() - GetElevatorSP(m_TargetState)) < CONSTANT("ELEVATOR_TOLERANCE") && fabs(m_Arm->GetPosition() - (GetArmSP(m_TargetState) * tempDirection)) < CONSTANT("ARM_TOLERANCE"))// && fabs(m_Wrist->GetPosition() - (GetWristSP(m_TargetState))) < CONSTANT("WRIST_TOLERANCE"))
         {
             m_CurrentState = m_TargetState;
             return;
@@ -460,6 +507,7 @@ void CowStateMachine::handle()
         }
         else if (m_TargetState == CowState::IDLE)
         {
+            //We are in the front so we move with possitive value
             if (m_CurrentState < CowState::BACKWARD_STATES)
             {
                 MoveSafe(m_TargetState, 1);
@@ -469,7 +517,7 @@ void CowStateMachine::handle()
                 MoveSafe(m_TargetState, -1);
             }
         }
-        //Check if we are trying to score
+        //Check if we are trying to intake from human player station
         else if (m_TargetState == CowState::HATCH_HP_INTAKE)
         {
             //If we are in the front HP position then use positive angles
@@ -482,6 +530,11 @@ void CowStateMachine::handle()
             {
                 MoveSafe(CowState::HATCH_HP_INTAKE, -1);
             }
+        }
+        //If we are trying to score a  hatch
+        else if (m_TargetState == CowState::HATCH_SCORE)
+        {
+            ScoreHatch();
         }
         //Check if we are in the front or back
         else if (m_CurrentState < CowState::BACKWARD_STATES)
