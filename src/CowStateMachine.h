@@ -4,6 +4,7 @@
 #include "CowConstants.h"
 #include "Subsystems/Elevator.h"
 #include "Subsystems/Arm.h"
+#include "Subsystems/Intake.h"
 #include <string>
 #include <iostream>
 
@@ -13,6 +14,7 @@ public:
     enum CowState
     {
         IDLE = 0,
+        HATCH_HP_INTAKE,
         MANUAL_CONTROL,
         HATCH_SCORE,
         FORWARD_STATES,
@@ -34,8 +36,7 @@ public:
         CARGO_GP_B,
         HATCH_HP_B,
         HATCH_GP_B,
-        CARGO_CS_B,
-        HATCH_HP_INTAKE
+        CARGO_CS_B
     };
 private:
     // enum ElevatorState 
@@ -89,6 +90,7 @@ private:
     Elevator *m_Elevator;
     Arm *m_Arm;
     Arm *m_Wrist;
+    Intake *m_Intake;
     void MoveSafe(CowState state, int direction);
     void ScoreHatch();
 
@@ -98,6 +100,7 @@ private:
     std::string m_CowStateString [22] = 
     {"IDLE",
     "MANUAL_CONTROL",
+    "HATCH_HP_INTAKE",
     "HATCH_SCORE",
     "CARGO_1_F",
     "CARGO_2",
@@ -117,7 +120,6 @@ private:
     "HATCH_HP_B",
     "HATCH_GP_B",
     "CARGO_CS_B"
-    "HATCH_HP_INTAKE"
     };
 
     CowState m_CurrentState;
@@ -131,7 +133,7 @@ private:
     double GetArmSP(CowState state);
     double GetWristSP(CowState state, int direction);
 public:
-    CowStateMachine(Elevator *elevator, Arm *arm, Arm *wrist);
+    CowStateMachine(Elevator *elevator, Arm *arm, Arm *wrist, Intake *intake);
 
     void SetState(CowState state);
     std::string GetTargetStateString()

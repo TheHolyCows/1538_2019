@@ -2,11 +2,12 @@
 #include <iostream>
 using namespace std;
 
-CowStateMachine::CowStateMachine(Elevator *elevator, Arm *arm, Arm *wrist)
+CowStateMachine::CowStateMachine(Elevator *elevator, Arm *arm, Arm *wrist, Intake *intake)
 {
     m_Elevator = elevator; 
     m_Arm = arm;
     m_Wrist = wrist;
+    m_Intake = intake;
     m_CurrentState = CowState::IDLE;
     m_TargetState = CowState::IDLE;
     // m_WristState = WristState::IDLE;
@@ -104,7 +105,7 @@ double CowStateMachine::GetElevatorSP(CowState state)
     {
         constantValue = CONSTANT("CARGO_CS_ELV");
     }
-    else if(state == CowState::IDLE)
+    else if(state < CowState::FORWARD_STATES)
     {
         constantValue = CONSTANT("IDLE_ELV");
     }
@@ -190,7 +191,7 @@ double CowStateMachine::GetArmSP(CowState state)
     {
         constantValue = CONSTANT("CARGO_CS_ARM");
     }
-    else if(state == CowState::IDLE)
+    else if(state < CowState::FORWARD_STATES)
     {
         constantValue = CONSTANT("IDLE_ARM");
     }
@@ -297,7 +298,7 @@ double CowStateMachine::GetWristSP(CowState state, int direction)
     {
         constantValue = CONSTANT("CARGO_CS_WRIST");
     }
-    else if(state == CowState::IDLE)
+    else if(state < CowState::FORWARD_STATES)
     {
         if (m_InHatchMode)
         {
@@ -442,8 +443,19 @@ void CowStateMachine::ScoreHatch()
         case CowState::HATCH_3:
             m_Elevator->SetPosition(CONSTANT("SCORE_HATCH_3_ELV"));
             m_Arm->SetPosition(CONSTANT("SCORE_HATCH_3_ARM"));
-            m_Wrist->SetPosition(CONSTANT("SCORE_HATCH_1_WRIST") + armPV);
+            m_Wrist->SetPosition(CONSTANT("SCORE_HATCH_3_WRIST") + armPV);
             break;
+        case CowState::HATCH_HP_F:
+            m_Elevator->SetPosition(CONSTANT("HATCH_HP_INTAKE_ELV"));
+            m_Arm->SetPosition(CONSTANT("HATCH_HP_INTAKE_ARM"));
+            m_Wrist->SetPosition(CONSTANT("HATCH_HP_INTAKE_WRIST") + armPV);
+            break;
+        case CowState::HATCH_HP_B:
+            m_Elevator->SetPosition(CONSTANT("HATCH_HP_INTAKE_ELV"));
+            m_Arm->SetPosition(CONSTANT("HATCH_HP_INTAKE_ARM") * -1);
+            m_Wrist->SetPosition((CONSTANT("HATCH_HP_INTAKE_WRIST") * -1) + armPV);
+            break;
+
     }
 }
 
@@ -535,6 +547,7 @@ void CowStateMachine::handle()
         else if (m_TargetState == CowState::HATCH_SCORE)
         {
             ScoreHatch();
+            m_Intake->SetSpeed(CONSTANT("HATCH_SCORE_EXHAUST"), false);
         }
         //Check if we are in the front or back
         else if (m_CurrentState < CowState::BACKWARD_STATES)

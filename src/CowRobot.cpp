@@ -42,7 +42,7 @@ CowRobot::CowRobot()
     m_Wrist = new Arm(5, CONSTANT("WRIST_PEAK_OUTPUT"), CONSTANT("WRIST_UP"), CONSTANT("WRIST_DOWN"), "WRIST", true, CONSTANT("WRIST_GEAR_RATIO") * (360.0/4096.0), CONSTANT("WRIST_PEAK_OUTPUT"));
     m_Wrist->SetCurrentLimit(CONSTANT("WRIST_PEAK_AMPS"), CONSTANT("WRIST_CONTINUOUS_AMPS"), CONSTANT("WRIST_PEAK_DURATION"), 10);
     m_Wrist->SetClosedLoopError(20);
-    m_StateMachine = new CowStateMachine(m_Elevator, m_Arm, m_Wrist);
+    m_StateMachine = new CowStateMachine(m_Elevator, m_Arm, m_Wrist, m_Intake);
 
     m_DetectLoadingStation = false;
     m_LoadDetect_LPF = new CowLib::CowLPF(CONSTANT("LOAD_DETECT_LPF"));
