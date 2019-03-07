@@ -1,7 +1,7 @@
 plugins {
     id "cpp"
     id "google-test-test-suite"
-    id "edu.wpi.first.GradleRIO" version "2019.2.1"
+    id "edu.wpi.first.GradleRIO" version "2019.4.1"
 }
 
 // Define my targets (RoboRIO) and artifacts (deployable files)
@@ -14,8 +14,7 @@ deploy {
             // You can use getTeamOrDefault(team) instead of getTeamNumber if you
             // want to store a team number in this file.
             //team = frc.getTeamNumber()
-            //team = 1538
-            team = 9538
+            team = 1538
         }
     }
     artifacts {

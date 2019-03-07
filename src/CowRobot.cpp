@@ -73,6 +73,12 @@ CowRobot::CowRobot()
     //limeLight = NetworkTable::GetTable("limelight");
     m_LimelightForward = nt::NetworkTableInstance::GetDefault().GetTable("limelight-front");
     m_LimelightBackward = nt::NetworkTableInstance::GetDefault().GetTable("limelight-back");
+    m_CameraServer = frc::CameraServer::GetInstance();
+    cs::UsbCamera temp = m_CameraServer->StartAutomaticCapture();
+    
+    std::cout << "Set pixelformat: " << temp.SetPixelFormat(cs::VideoMode::kMJPEG) << std::endl;
+    std::cout << "Set resolution: " << temp.SetResolution(CONSTANT("CAMERA_W"), CONSTANT("CAMERA_H")) << std::endl;
+    std::cout << "Set framerate: " << temp.SetFPS(CONSTANT("CAMERA_FPS")) << std::endl;
 }
 
 void CowRobot::Reset()
@@ -311,7 +317,7 @@ void CowRobot::DriveSpeedTurn(float speed, float turn, bool quickTurn)
     
     if(speed < 0.10 && speed > -0.10)
         speed = 0;
-    if (((turn < 0.10) && (turn > -0.10)) || ((speed == 0) && !quickTurn))
+    if (((turn < 0.02) && (turn > -0.02)) || ((speed == 0) && !quickTurn))
         turn = 0;
 
     if(quickTurn)
@@ -328,7 +334,7 @@ void CowRobot::DriveSpeedTurn(float speed, float turn, bool quickTurn)
     }
     else
     {
-        sensitivity = 0.35;
+        sensitivity = 0.25;
     }
 
     turn *= sensitivity;

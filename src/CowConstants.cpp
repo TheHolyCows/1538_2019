@@ -253,9 +253,9 @@ void CowConstants::ParseINI(const std::string &data)
                 {
                     if(currentSection != NULL)
                     {
-                        printf("%s.", currentSection);
+                        //printf("%s.", currentSection);
                     }
-                    printf("%s: %s\n", tokens[i-2].value.c_str(), t.value.c_str());
+                    //printf("%s: %s\n", tokens[i-2].value.c_str(), t.value.c_str());
                     SetValueForKey(tokens[i-2].value, t.value);
                 }
             }

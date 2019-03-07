@@ -26,6 +26,21 @@ void OperatorController::handle(CowRobot *bot)
     {
        if(m_CB->GetSteeringButton(3))
        {
+            if(!m_CB->GetOperatorButton(10))
+            {
+                bot->GetLimelight(forwardDirection)->PutNumber("pipeline", 0);
+            }
+            else
+            {
+                bot->GetLimelight(forwardDirection)->PutNumber("pipeline", 2);
+            }
+           bot->DriveSpeedTurn(m_CB->GetDriveStickY(),
+                               (bot->GetLimelight(forwardDirection)->GetNumber("tx",0.0)*CONSTANT("LIMELIGHT_X_KP")),
+                               0);
+       }
+       else if(m_CB->GetSteeringButton(1))
+       {
+           bot->GetLimelight(forwardDirection)->PutNumber("pipeline", 1);
            bot->DriveSpeedTurn(m_CB->GetDriveStickY(),
                                (bot->GetLimelight(forwardDirection)->GetNumber("tx",0.0)*CONSTANT("LIMELIGHT_X_KP")),
                                0);
@@ -39,7 +54,7 @@ void OperatorController::handle(CowRobot *bot)
     }
 
     
-    if(m_CB->GetSteeringButton(1))
+    if(m_CB->GetSteeringButton(4))
     {
         bot->GetStateMachine()->SetState(CowStateMachine::CowState::IDLE);
     }

@@ -401,14 +401,14 @@ void CowStateMachine::MoveSafe(CowState state, int direction)
             }
             m_Elevator->SetPosition(GetElevatorSP(state));
         }
-        if (m_CurrentState != m_TargetState && m_Arm->GetPosition() > CONSTANT("ARM_SAFE_WRIST"))
-        {
-            m_Wrist->SetPosition(CONSTANT("WRIST_TRAVEL_POSITION") + m_Arm->GetPosition());
-        }
-        else
-        {
+        //if (m_CurrentState != m_TargetState && (m_Arm->GetPosition() > CONSTANT("ARM_SAFE_WRIST") || !m_InTransit))
+        //{
+        //    m_Wrist->SetPosition(CONSTANT("WRIST_TRAVEL_POSITION") + fabs(m_Arm->GetPosition()));
+        //}
+        //else
+        //{
             m_Wrist->SetPosition(GetWristSP(state, direction) * direction);
-        }
+        //}
     }
     if (m_Elevator->GetDistance() > CONSTANT("CROSSBAR_HEIGHT"))
     {
@@ -547,7 +547,7 @@ void CowStateMachine::handle()
         else if (m_TargetState == CowState::HATCH_SCORE)
         {
             ScoreHatch();
-            m_Intake->SetSpeed(CONSTANT("HATCH_SCORE_EXHAUST"), false);
+            //m_Intake->SetSpeed(CONSTANT("HATCH_SCORE_EXHAUST"), false);
         }
         //Check if we are in the front or back
         else if (m_CurrentState < CowState::BACKWARD_STATES)
