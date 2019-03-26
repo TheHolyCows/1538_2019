@@ -37,12 +37,12 @@ CowRobot::CowRobot()
     m_DriveEncoder = m_DriveEncoderRight;
 
     m_Elevator = new Elevator (2, 3, MXP_QEI_3_A, MXP_QEI_3_B);
-    m_Arm = new Arm(6, CONSTANT("ARM_PEAK_OUTPUT"), CONSTANT("ARM_UP_LIMIT"), CONSTANT("ARM_DOWN"), "ARM", true, CONSTANT("ARM_GEAR_RATIO") * (360.0/4096.0), CONSTANT("ARM_PEAK_OUTPUT"));
-    m_Intake = new Intake(4);
-    m_Wrist = new Arm(5, CONSTANT("WRIST_PEAK_OUTPUT"), CONSTANT("WRIST_UP"), CONSTANT("WRIST_DOWN"), "WRIST", false, CONSTANT("WRIST_GEAR_RATIO") * (360.0/4096.0), CONSTANT("WRIST_PEAK_OUTPUT"));
-    m_Wrist->SetCurrentLimit(CONSTANT("WRIST_PEAK_AMPS"), CONSTANT("WRIST_CONTINUOUS_AMPS"), CONSTANT("WRIST_PEAK_DURATION"), 10);
-    m_Wrist->SetClosedLoopError(20);
-    m_StateMachine = new CowStateMachine(m_Elevator, m_Arm, m_Wrist, m_Intake);
+    m_Arm = new Arm(6, CONSTANT("ARM_PEAK_OUTPUT"), CONSTANT("ARM_UP_LIMIT"), CONSTANT("ARM_DOWN"), "ARM", true, 0, CONSTANT("ARM_PEAK_OUTPUT"));
+    m_CargoIntake = new Intake(14);
+    m_HatchIntake = new Intake(5);
+
+    m_RightJack = new Jack(1, true);
+    m_LeftJack = new Jack(4, true);
 
     m_DetectLoadingStation = false;
     m_LoadDetect_LPF = new CowLib::CowLPF(CONSTANT("LOAD_DETECT_LPF"));
@@ -94,10 +94,8 @@ void CowRobot::Reset()
     m_AccelY_LPF->UpdateBeta(CONSTANT("TIP_LPF"));
     m_LoadDetect_LPF->UpdateBeta(CONSTANT("LOAD_DETECT_LPF"));
     m_Elevator->ResetConstants();
-    m_Wrist->ResetConstants(CONSTANT("WRIST_UP"), CONSTANT("WRIST_DOWN"), CONSTANT("WRIST_PEAK_OUTPUT"));
-    m_Wrist->SetCurrentLimit(CONSTANT("WRIST_PEAK_AMPS"), CONSTANT("WRIST_CONTINUOUS_AMPS"), CONSTANT("WRIST_PEAK_DURATION"), 10);
     m_Arm->ResetConstants(CONSTANT("ARM_UP_LIMIT"), CONSTANT("ARM_DOWN"), CONSTANT("ARM_PEAK_OUTPUT"));
-    m_Intake->ResetConstants();
+    m_CargoIntake->ResetConstants();
 }
 
 void CowRobot::SetController(GenericController *controller)
@@ -162,17 +160,10 @@ void CowRobot::handle()
 
     frc::SmartDashboard::PutNumber("Elevator SP", m_Elevator->GetSetPoint());
     frc::SmartDashboard::PutNumber("Elevator PV", m_Elevator->GetDistance());
-    frc::SmartDashboard::PutString("PosePlanner State", m_StateMachine->GetCurrentStateString());
-    frc::SmartDashboard::PutString("PosePlanner TargetState", m_StateMachine->GetTargetStateString());
     frc::SmartDashboard::PutNumber("Arm PV", m_Arm->GetPosition());
     frc::SmartDashboard::PutNumber("Arm SP", m_Arm->GetSetpoint() * m_Arm->GetDegreesPerTick());
-    frc::SmartDashboard::PutNumber("Wrist PV", m_Wrist->GetPosition() - m_Arm->GetPosition());
-    frc::SmartDashboard::PutNumber("Wrist SP", (m_Wrist->GetSetpoint() * m_Wrist->GetDegreesPerTick()) - m_Arm->GetPosition());
     frc::SmartDashboard::PutNumber("Elevator At Target:", m_Elevator->AtTarget());
     frc::SmartDashboard::PutNumber("Arm At Target:", m_Arm->AtTarget());
-    frc::SmartDashboard::PutNumber("Wrist At Target:", m_Wrist->AtTarget());
-    frc::SmartDashboard::PutNumber("In Transit:", m_StateMachine->InTransit());
-    frc::SmartDashboard::PutNumber("Intake Current:", m_Intake->GetCurrent());
     // double LoadingStationLPF = m_LoadDetect_LPF->Calculate(0);
     // //std::cout << "start time: " << m_StartTime << " match time: " << m_MatchTime << std::endl;
     // if (m_DetectLoadingStation)
@@ -189,11 +180,12 @@ void CowRobot::handle()
         
     // }
 
-    m_StateMachine->handle();
     m_Elevator->handle();
     m_Arm->handle();
-    m_Intake->handle();
-    m_Wrist->handle();
+    m_CargoIntake->handle();
+    m_HatchIntake->handle();
+    m_RightJack->handle();
+    m_LeftJack->handle();
     m_Canifier->Handle();
 
     //frc::SmartDashboard::PutNumber("Drive distance", GetDriveDistance());

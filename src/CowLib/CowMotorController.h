@@ -27,6 +27,7 @@ namespace CowLib
             VOLTAGE,
             FOLLOWER,
             MOTIONPROFILE,
+            MOTIONMAGIC
         };
 
         CowMotorController(int deviceNum);
@@ -39,6 +40,7 @@ namespace CowLib
         enum CowControlMode GetControlMode();
         float GetPosition();
         void SetPIDGains(float pGain, float iGain, float dGain, float fGain, double peakOutput);
+        void SetMotionMagic(float accel, float velocity);
         void Set(float);
         void SetInverted(bool Value);
         void SetPeakCurrent(int amps, int ms);

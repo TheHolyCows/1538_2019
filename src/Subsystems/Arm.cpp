@@ -13,7 +13,7 @@
 Arm::Arm(int motorController, double maxSpeed, double upLimit, double downLimit, std::string name, bool changeDirection, double degreesPerTick, double peakOutput)
 {
 	m_Motor = new CowLib::CowMotorController(motorController);
-	m_Motor->SetControlMode(CowLib::CowMotorController::POSITION);
+	m_Motor->SetControlMode(CowLib::CowMotorController::MOTIONMAGIC);
 	m_Position = 0;
 	m_DegreesPerTick = degreesPerTick;
     //m_MaxSpeed = maxSpeed;
@@ -26,10 +26,9 @@ Arm::Arm(int motorController, double maxSpeed, double upLimit, double downLimit,
 
 	m_Name = name;
     m_PeakOutput = peakOutput;
-    m_CalculateGain = true;
 
 	ResetConstants(upLimit, downLimit, peakOutput);
-	m_Motor->SetInverted(changeDirection);
+	m_Motor->SetInverted(false);
 }
 
 bool Arm::AtTarget()
@@ -40,21 +39,16 @@ bool Arm::AtTarget()
 
 void Arm::SetPosition(float position)
 {
-	if(position < m_DownLimit)
-	{
-		position = m_DownLimit;
-	}
-	else if(position > m_UpLimit)
-	{
-		position = m_UpLimit;
-	}
-	position = position / m_DegreesPerTick;
-    
-    //if (position < m_Position)
-    //{
-    //    position *= 0.68;
-    //}
-    m_CalculateGain = true;
+	//if(position < m_DownLimit)
+	//{
+	//	position = m_DownLimit;
+	//}
+	//else if(position > m_UpLimit)
+	//{
+//		position = m_UpLimit;
+//	}
+	//position = position / m_DegreesPerTick;
+    //m_CalculateGain = true;
 	m_Position = position;
 }
 
@@ -65,72 +59,33 @@ float Arm::GetSetpoint()
 
 float Arm::GetPosition()
 {
-	return m_Motor->GetPosition()*m_DegreesPerTick;
+    return 0;
+	//return m_Motor->GetPosition()*m_DegreesPerTick;
 }
 
 void Arm::ResetConstants(double upLimit, double downLimit, double peakOutput)
 {
-	m_UpLimit = upLimit;
-	m_DownLimit = downLimit;
-    m_PeakOutput = peakOutput;
-	std::string pConstant = m_Name + "_P";
-	std::string iConstant = m_Name + "_I";
-	std::string dConstant = m_Name + "_D";
-
-	m_Motor->SetPIDGains(CONSTANT(pConstant.c_str())*CONSTANT("DEBUG_PID"), CONSTANT(iConstant.c_str())*CONSTANT("DEBUG_PID"), CONSTANT(dConstant.c_str())*CONSTANT("DEBUG_PID"), 0, m_PeakOutput);
+	m_Motor->SetPIDGains(CONSTANT("ARM_P")*CONSTANT("DEBUG_PID"), CONSTANT("ARM_I")*CONSTANT("DEBUG_PID"), CONSTANT("ARM_D")*CONSTANT("DEBUG_PID"), 0, 1);
+	m_Motor->SetMotionMagic(CONSTANT("ARM_ACCEL"), CONSTANT("ARM_VELOCITY"));
 	std::cout << "In the arm reset constants" << std::endl;
 }
 
-// void Arm::DisabledCalibration()
-// {
-// 	//std::cout << "Current hardstop value: " << m_PlanetaryHardstop << " ArmPos: " << m_Motor->GetPosition() << std::endl;
-// 	if(m_Motor->GetPosition() > m_PlanetaryHardstop)
-// 	{
-// 		m_PlanetaryHardstop = m_Motor->GetPosition();
-// 	}
-// }
 
 void Arm::handle()
 {
-	std::string slowConstantStr = m_Name + "_SC";
-	std::string pConstant = m_Name + "_P";
-	std::string iConstant = m_Name + "_I";
-	std::string dConstant = m_Name + "_D";
-    float slowConstant = 1;
-    if(m_CalculateGain)
+    if(m_Motor)
     {
-        if ((GetPosition() > 0))
-        {
-            if (GetSetpoint()*GetDegreesPerTick() < GetPosition())
-            {
-                slowConstant = CONSTANT(slowConstantStr.c_str());
-            }
-	        m_Motor->SetPIDGains(CONSTANT(pConstant.c_str())*CONSTANT("DEBUG_PID")*slowConstant, CONSTANT(iConstant.c_str())*CONSTANT("DEBUG_PID")*slowConstant, CONSTANT(dConstant.c_str())*CONSTANT("DEBUG_PID")*slowConstant, 0, m_PeakOutput);
-        }
-        else
-        {
-            if (GetSetpoint()*GetDegreesPerTick() > GetPosition())
-            {
-                slowConstant = CONSTANT(slowConstantStr.c_str());
-            }
-	        m_Motor->SetPIDGains(CONSTANT(pConstant.c_str())*CONSTANT("DEBUG_PID")*slowConstant, CONSTANT(iConstant.c_str())*CONSTANT("DEBUG_PID")*slowConstant, CONSTANT(dConstant.c_str())*CONSTANT("DEBUG_PID")*slowConstant, 0, m_PeakOutput);
-        }
-        m_CalculateGain = false;
+        m_Motor->Set(m_Position);
     }
-	if(m_Motor)
-	{
-		m_Motor->Set(m_Position);
-	}
-
     //SmartDashboard::PutNumber("Arm", (m_Motor->GetPosition()-m_PlanetaryHardstop));
-	//std::cout << m_Name << " position: " << m_Motor->GetPosition() << std::endl;
+	std::cout << m_Name << " position: " << m_Position << std::endl;
 }
 void Arm::SetCurrentLimit(float peakAmps, float continuousAmps, int peakDuration, int ms)
 {
-	m_Motor->GetInternalMotor()->ConfigPeakCurrentLimit(peakAmps, ms);
-	m_Motor->GetInternalMotor()->ConfigPeakCurrentDuration(peakDuration, ms);
-	m_Motor->GetInternalMotor()->ConfigContinuousCurrentLimit(continuousAmps, ms);
-	m_Motor->GetInternalMotor()->EnableCurrentLimit(true);
+	//m_Motor->GetInternalMotor()->ConfigPeakCurrentLimit(peakAmps, ms);
+	//m_Motor->GetInternalMotor()->ConfigPeakCurrentDuration(peakDuration, ms);
+	//m_Motor->GetInternalMotor()->ConfigContinuousCurrentLimit(continuousAmps, ms);
+	//m_Motor->GetInternalMotor()->EnableCurrentLimit(true);
 }
 
 Arm::~Arm()

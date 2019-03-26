@@ -17,12 +17,12 @@
 #define GYRO_SENSITIVITY                 0.007
 
 // CAN IDs
-#define DRIVE_RIGHT_A                    11
-#define DRIVE_RIGHT_B                    12
-#define DRIVE_RIGHT_C                    13
-#define DRIVE_LEFT_A                     8
-#define DRIVE_LEFT_B                     9
-#define DRIVE_LEFT_C                     10
+#define DRIVE_RIGHT_A                    8
+#define DRIVE_RIGHT_B                    9
+#define DRIVE_RIGHT_C                    10
+#define DRIVE_LEFT_A                     11
+#define DRIVE_LEFT_B                     12
+#define DRIVE_LEFT_C                     13
 
 #define MXP_QEI_1_A                      10
 #define MXP_QEI_1_B                      11

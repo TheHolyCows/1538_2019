@@ -69,6 +69,9 @@ namespace CowLib
             case CowMotorController::MOTIONPROFILE :
                 retVal = ControlMode::MotionProfile;
                 break;
+            case CowMotorController::MOTIONMAGIC :
+                retVal = ControlMode::MotionMagic;
+                break;
             default :
                 // What?
                 break;
@@ -96,7 +99,11 @@ namespace CowLib
         m_MotorController->ConfigPeakOutputReverse(-peakOutput);
     }
 
-    //void CowMotorController
+    void CowMotorController::SetMotionMagic(float accel, float velocity)
+    {
+        m_MotorController->ConfigMotionAcceleration(accel, 10);
+        m_MotorController->ConfigMotionCruiseVelocity(velocity, 10);
+    }
 
     void CowMotorController::SetPeakCurrent(int amps, int ms)
     {

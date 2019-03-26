@@ -12,14 +12,18 @@
 
 Elevator::Elevator(int motorRight, int motorLeft, int encoderA, int encoderB)
 {
+    m_MotorLeftID = motorLeft;
 	m_MotorRight = new CowLib::CowMotorController(motorRight);
 	m_MotorLeft = new CowLib::CowMotorController(motorLeft);
 	m_Speed = 0;
-	m_Encoder = new frc::Encoder(encoderA, encoderB, false, frc::Encoder::k1X);
-	m_Encoder->SetDistancePerPulse(0.01090830782);
-	m_PID = new CowLib::CowPID(CONSTANT("ELEVATOR_P"), CONSTANT("ELEVATOR_I"), CONSTANT("ELEVATOR_D"), 0);
-	m_Position = 0;
-	m_PID->SetSetpoint(m_Position);
+    m_Position = 0;
+    m_MotorLeft->SetControlMode(CowLib::CowMotorController::MOTIONMAGIC);
+    m_EncoderInchPerTick = CONSTANT("ELEVATOR_INCH_PER_TICK");
+    ResetConstants();
+    m_MotorLeft->SetInverted(false);
+    m_MotorRight->SetControlMode(CowLib::CowMotorController::FOLLOWER);
+    //m_MotorRight->GetInternalMotor()->SetInverted(true);
+    m_MotorRight->GetInternalMotor()->SetInverted(true);
 }
 
 void Elevator::SetSpeed(float speed)
@@ -38,37 +42,31 @@ void Elevator::SetPosition(float position)
 	{
 		m_Position = CONSTANT("ELEVATOR_MAX");
 	}
-
-	m_PID->SetSetpoint(m_Position);
 }
 
 float Elevator::GetDistance()
 {
-	return m_Encoder->GetDistance();
+	//return m_Encoder->GetDistance();
 }
 
 void Elevator::ResetConstants()
 {
-	m_PID->UpdateConstants(CONSTANT("ELEVATOR_P"), CONSTANT("ELEVATOR_I"), CONSTANT("ELEVATOR_D"), 0);
+	m_MotorLeft->SetPIDGains(CONSTANT("ELEVATOR_P")*CONSTANT("DEBUG_PID"), CONSTANT("ELEVATOR_I")*CONSTANT("DEBUG_PID"), CONSTANT("ELEVATOR_D")*CONSTANT("DEBUG_PID"), 0, 1);
+	m_MotorLeft->SetMotionMagic(CONSTANT("ELEVATOR_ACCEL"), CONSTANT("ELEVATOR_VELOCITY"));
 	std::cout << "In the elevator reset constants" << std::endl;
+    m_EncoderInchPerTick = CONSTANT("ELEVATOR_INCH_PER_TICK");
 }
 bool Elevator::AtTarget()
 {
-	return (fabs(m_Position - m_Encoder->GetDistance()) < CONSTANT("ELEVATOR_TOLERANCE"));
+    return true;
+	//return (fabs(m_Position - m_Encoder->GetDistance()) < CONSTANT("ELEVATOR_TOLERANCE"));
 }
 void Elevator::handle()
 {
-	float currentPosition = m_Encoder->GetDistance();
-	float pidOutput = m_PID->Calculate(currentPosition) * CONSTANT("DEBUG_PID");
-
-    if (m_Position < currentPosition)
-    {
- 	    pidOutput *= CONSTANT("ELEVATOR_SC");
-        pidOutput = CowLib::LimitMix(pidOutput, CONSTANT("ELEVATOR_PEAK_OUTPUT"));
-    }
-
-	m_MotorRight->Set(-pidOutput);
-	m_MotorLeft->Set(pidOutput);
+	//float currentPosition = m_Encoder->GetDistance();
+	//m_MotorRight->Set(-pidOutput);
+    m_MotorLeft->Set(m_Position / m_EncoderInchPerTick);
+    m_MotorRight->Set(m_MotorLeftID);
 
 	//std::cout << "Current elevator: " << currentPosition << " PID: " << pidOutput << std::endl;
 }
@@ -78,6 +76,6 @@ Elevator::~Elevator()
 {
 	delete m_MotorRight;
 	delete m_MotorLeft;
-	delete m_Encoder;
+	//delete m_Encoder;
 }
 

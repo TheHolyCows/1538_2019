@@ -22,7 +22,7 @@
 #include "Subsystems/Elevator.h"
 #include "Subsystems/Arm.h"
 #include "Subsystems/Intake.h"
-#include "CowStateMachine.h"
+#include "Subsystems/Jack.h"
 
 class CowRobot
 {
@@ -54,10 +54,11 @@ private:
 
     Elevator *m_Elevator;
     Arm *m_Arm;
-    Arm *m_Wrist;
-    Intake *m_Intake;
-    CowStateMachine *m_StateMachine;
-
+    Intake *m_CargoIntake;
+    Intake *m_HatchIntake;
+    Jack *m_RightJack;
+    Jack *m_LeftJack;
+    
     bool m_DetectLoadingStation;
 
     float m_LeftDriveValue;
@@ -154,21 +155,23 @@ public:
     {
         return m_Arm;
     }
-
-    Arm* GetWrist()
+    Intake* GetCargoIntake()
     {
-        return m_Wrist;
+        return m_CargoIntake;
     }
-    Intake* GetIntake()
+    Intake* GetHatchIntake()
     {
-        return m_Intake;
+        return m_HatchIntake;
     }
-    
-    CowStateMachine* GetStateMachine()
+    Jack* GetRightJack()
     {
-        return m_StateMachine;
+        return m_RightJack;
     }
 
+    Jack* GetLeftJack()
+    {
+        return m_LeftJack;
+    }
     CowLib::CowCanifier* GetCanifier()
     {
         return m_Canifier;
