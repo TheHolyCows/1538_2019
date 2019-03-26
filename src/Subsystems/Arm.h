@@ -33,7 +33,10 @@ public:
     {
         m_Motor->SetClosedLoopError(error);
     }
+    void DisableOutput(bool disable)
+    {
 
+    }
 	void handle();
 
 	float GetPosition();

@@ -29,7 +29,6 @@ CowBase::~CowBase()
 
 void CowBase::RobotInit()
 {
-    system("dhclient -r eth0");
     m_Bot->Reset();
 }
 

@@ -47,6 +47,7 @@ void OperatorController::handle(CowRobot *bot)
        }
        else
        { 
+        bot->GetLimelight(forwardDirection)->PutNumber("pipeline", 3);
          bot->DriveSpeedTurn(m_CB->GetDriveStickY(),
                              m_CB->GetSteeringX(),
                              m_CB->GetSteeringButton(FAST_TURN));

@@ -23,21 +23,21 @@ void Intake::SetSpeed(float speed, bool limitCurrent)
 
 void Intake::handle()
 {
-    float latestCurrent = m_Motor->GetOutputCurrent();
-    m_Current = m_CurrentLPF->Calculate(latestCurrent);
-    if (m_Current > CONSTANT("INTAKE_CURRENT_THRESHOLD") && m_LimitCurrent)
-    {
-        m_Hold = true;
-    }
-    if (m_Hold)
-    {
-        m_PID->SetSetpoint(CONSTANT("INTAKE_CURRENT"));
-        m_Motor->Set(-m_PID->Calculate(latestCurrent));
-    }
-    else
-    {
+    //float latestCurrent = m_Motor->GetOutputCurrent();
+    //m_Current = m_CurrentLPF->Calculate(latestCurrent);
+    //if (m_Current > CONSTANT("INTAKE_CURRENT_THRESHOLD") && m_LimitCurrent)
+    //{
+    //    m_Hold = true;
+    //}
+    //if (m_Hold)
+    //{
+    //    m_PID->SetSetpoint(CONSTANT("INTAKE_CURRENT"));
+    //    m_Motor->Set(-m_PID->Calculate(latestCurrent));
+    //}
+    //else
+    //{
         m_Motor->Set(m_Speed);
-    }
+    //}
 }
 
 void Intake::ResetConstants()
