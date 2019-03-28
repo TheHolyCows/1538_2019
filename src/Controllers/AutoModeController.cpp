@@ -53,12 +53,15 @@ void AutoModeController::handle(CowRobot *bot)
 	case CMD_TURN_INTAKE:
 	{
 		result = bot->TurnToHeading(m_CurrentCommand.m_Heading);
+		//bot->GetArm()->SetModulatedSpeed(CONSTANT("INTAKE_SPEED"));
 
 		break;
 	}
 	case CMD_HOLD_DISTANCE:
 	{
 		bot->DriveDistanceWithHeading(m_CurrentCommand.m_Heading, m_CurrentCommand.m_EncoderCount, m_CurrentCommand.m_Speed);
+		bot->GetElevator()->SetPosition(m_CurrentCommand.m_ElevatorPos);
+		//bot->GetArm()->SetIntakeSpeed(-0.2);
 
 		result = false;
 		break;
@@ -66,6 +69,9 @@ void AutoModeController::handle(CowRobot *bot)
 	case CMD_HOLD_DISTANCE_INTAKE:
 	{
 		bot->DriveDistanceWithHeading(m_CurrentCommand.m_Heading, m_CurrentCommand.m_EncoderCount, m_CurrentCommand.m_Speed);
+		bot->GetElevator()->SetPosition(m_CurrentCommand.m_ElevatorPos);
+//		bot->GetArm()->SetPosition(CONSTANT("ARM_DOWN"));
+		//bot->GetArm()->SetModulatedSpeed(CONSTANT("INTAKE_SPEED"));
 
 		result = false;
 		break;
@@ -73,6 +79,8 @@ void AutoModeController::handle(CowRobot *bot)
 	case CMD_ARM_UP:
 	{
 		bot->DriveLeftRight(0, 0);
+		bot->GetArm()->SetPosition(CONSTANT("ARM_UP"));
+		//bot->GetArm()->SetIntakeSpeed(-0.6);
 
 		result = false;
 		break;
@@ -80,6 +88,8 @@ void AutoModeController::handle(CowRobot *bot)
 	case CMD_ARM_DOWN:
 	{
 		bot->DriveLeftRight(0, 0);
+		bot->GetArm()->SetPosition(CONSTANT("ARM_DOWN"));
+		//bot->GetArm()->SetIntakeSpeed(-0.2);
 
 		result = false;
 		break;
@@ -95,6 +105,8 @@ void AutoModeController::handle(CowRobot *bot)
 		}
 
 		bot->DriveWithHeading(m_CurrentCommand.m_Heading, m_CurrentCommand.m_Speed * direction);
+		bot->GetElevator()->SetPosition(m_CurrentCommand.m_ElevatorPos);
+		//bot->GetArm()->SetIntakeSpeed(-0.2);
 
 		if(direction == 1) //Going forward
 		{
@@ -123,6 +135,9 @@ void AutoModeController::handle(CowRobot *bot)
 		}
 
 		bot->DriveWithHeading(m_CurrentCommand.m_Heading, m_CurrentCommand.m_Speed * direction);
+		bot->GetElevator()->SetPosition(m_CurrentCommand.m_ElevatorPos);
+//		bot->GetArm()->SetPosition(CONSTANT("ARM_DOWN"));
+		//bot->GetArm()->SetModulatedSpeed(CONSTANT("INTAKE_SPEED"));
 
 		if(direction == 1) //Going forward
 		{
@@ -140,22 +155,6 @@ void AutoModeController::handle(CowRobot *bot)
 		}
 		break;
 	}
-	case CMD_AUTO_FWD_LOW:
-	{
-		bot->DriveWithHeading(m_CurrentCommand.m_Heading, m_CurrentCommand.m_Speed);
-		break;
-	}
-	case CMD_AUTO_FWD:
-	{
-		bot->DriveWithHeading(m_CurrentCommand.m_Heading, m_CurrentCommand.m_Speed);
-		break;
-	}
-	case CMD_AUTO_REV:
-	{
-		bot->DriveWithHeading(m_CurrentCommand.m_Heading, m_CurrentCommand.m_Speed);
-		break;
-	}
-
 	case CMD_LEFT_ENCODER:
 	{
 		std::cout << "Using the left encoder" << std::endl;

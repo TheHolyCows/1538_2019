@@ -70,6 +70,15 @@ void Arm::ResetConstants(double upLimit, double downLimit, double peakOutput)
 	std::cout << "In the arm reset constants" << std::endl;
 }
 
+void Arm::DisabledCalibration()
+{
+        float currentPosition = m_Motor->GetPosition();
+
+        if(currentPosition > 0)
+        {
+                m_Motor->SetSensorPosition(0);
+        }
+}
 
 void Arm::handle()
 {

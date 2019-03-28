@@ -3,48 +3,56 @@
 #include <iostream>
 #include <frc/Timer.h>
 
-Intake::Intake(int motorController)
+Intake::Intake(int motorController, bool autoHold, float autoHoldSpeed, float lpfBeta, float currentThreshold)
 {
     m_Motor = new CowLib::CowMotorController(motorController);
     m_Speed = 0;
     m_LimitCurrent = false;
     m_Current = 0;
-    m_CurrentLPF = new CowLib::CowLPF(CONSTANT("INTAKE_CURRENT_LPF"));
-    m_Hold = false;
-	m_PID = new CowLib::CowPID(CONSTANT("INTAKE_P"), CONSTANT("INTAKE_I"), CONSTANT("INTAKE_D"), CONSTANT("INTAKE_F"));
-    //m_Motor->SetPeakCurrent(CONSTANT("INTAKE_PEAK_CURRENT"), CONSTANT("INTAKE_PEAK_DURATION"));
+    m_CurrentThreshold = currentThreshold;
+    m_CurrentLPF = new CowLib::CowLPF(lpfBeta);
+    m_DetectObject = false;
+    m_AutoHoldSpeed = autoHoldSpeed;
+    m_AutoHold = autoHold;
 }
 
-void Intake::SetSpeed(float speed, bool limitCurrent)
+void Intake::SetSpeed(float speed, bool clearObject)
 {
-    m_LimitCurrent = limitCurrent;
+    if(clearObject)
+    {
+	m_DetectObject = false;
+	m_CurrentLPF->UpdateBeta(m_LpfBeta);
+    }
+
     m_Speed = speed;
+}
+
+bool Intake::DetectedObject()
+{
+   return m_DetectObject;
 }
 
 void Intake::handle()
 {
-    //float latestCurrent = m_Motor->GetOutputCurrent();
-    //m_Current = m_CurrentLPF->Calculate(latestCurrent);
-    //if (m_Current > CONSTANT("INTAKE_CURRENT_THRESHOLD") && m_LimitCurrent)
-    //{
-    //    m_Hold = true;
-    //}
-    //if (m_Hold)
-    //{
-    //    m_PID->SetSetpoint(CONSTANT("INTAKE_CURRENT"));
-    //    m_Motor->Set(-m_PID->Calculate(latestCurrent));
-    //}
-    //else
-    //{
-        m_Motor->Set(m_Speed);
-    //}
+    float latestCurrent = m_Motor->GetOutputCurrent();
+    m_Current = m_CurrentLPF->Calculate(latestCurrent);
+    if (m_Current > m_CurrentThreshold)
+    {
+        m_DetectObject = true;
+    }
+    if(m_AutoHold && m_DetectObject)
+    {
+    	m_Speed = m_AutoHoldSpeed;
+    }
+    m_Motor->Set(m_Speed);
 }
 
-void Intake::ResetConstants()
+void Intake::ResetConstants(float lpfBeta, float autoHoldSpeed, float currentThreshold)
 {
-    //m_Motor->SetPeakCurrent(CONSTANT("INTAKE_PEAK_CURRENT"), CONSTANT("INTAKE_PEAK_DURATION"));
-    m_CurrentLPF->UpdateBeta(CONSTANT("INTAKE_CURRENT_LPF"));
-    m_PID->UpdateConstants(CONSTANT("INTAKE_P"), CONSTANT("INTAKE_I"), CONSTANT("INTAKE_D"), CONSTANT("INTAKE_F"));
+    m_LpfBeta = lpfBeta;
+    m_CurrentLPF->UpdateBeta(m_LpfBeta);
+    m_AutoHoldSpeed = autoHoldSpeed;
+    m_CurrentThreshold = currentThreshold;
 }
 
 Intake::~Intake()

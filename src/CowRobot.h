@@ -110,17 +110,11 @@ public:
         m_DetectLoadingStation = false;
     }
 
-    std::shared_ptr<nt::NetworkTable> GetLimelight(bool direction)
+    std::shared_ptr<nt::NetworkTable> GetLimelight()
     {
-        if (!direction)
-        {   
-            return m_LimelightForward;
-        }
-        else
-        {
-            return m_LimelightBackward;
-        }
+    	return m_LimelightForward;
     }
+    bool DoVisionTracking(float speed, float yThreshold = 24.85);
     void QuickTurn(float turn);
     
     void StartTime();

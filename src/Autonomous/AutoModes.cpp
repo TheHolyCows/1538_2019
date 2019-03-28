@@ -13,9 +13,13 @@ AutoModes *AutoModes::GetInstance()
 }
 
 AutoModes::AutoModes()
-{	
+{
 	// Set up our selection order
+	m_Modes["Nothing"];
+	m_Modes["Nothing"].push_back(RobotCommand(CMD_WAIT, 0, 0, 0, 0, false, 0));
 
+	m_Modes["Two Hatch Rocket - Right"];
+	m_Modes["Two Hatch Rocket - Right"].push_back(RobotCommand(CMD_RIGHT_ENCODER, 0, 0, 0, 5, true, 0.01));
 	m_Iterator = m_Modes.begin();
 }
 

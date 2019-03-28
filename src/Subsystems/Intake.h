@@ -15,24 +15,33 @@ private:
     float m_Speed;
     bool m_LimitCurrent;
     double m_Current;
-    CowLib::CowLPF* m_CurrentLPF; 
-    CowLib::CowPID* m_PID;
-    bool m_Hold;
+    float m_CurrentThreshold;
+    CowLib::CowLPF* m_CurrentLPF;
+    float m_LpfBeta;
+    bool m_DetectObject; 
+    bool m_AutoHold;
+    float m_AutoHoldSpeed;
+    bool m_HasBlinkedLed;
 
 public:
-    Intake(int morotController);
-    void SetSpeed(float speed, bool limitCurrent);
+    Intake(int motorController, bool autoHold, float autoHoldSpeed, float lpfBeta, float currentThreshold);
+    void SetSpeed(float speed, bool clearObject);
     double GetCurrent()
     {
         return m_Current;
     }
-    void ReleaseHold()
+    bool DetectedObject();
+    bool BlinkLED()
     {
-        m_Hold = false;
-        m_CurrentLPF->UpdateBeta(CONSTANT("INTAKE_CURRENT_LPF"));
+	if(!m_HasBlinkedLed)
+	{
+		m_HasBlinkedLed = true;
+		return true;
+	}
+	return false;
     }
     void handle();
-    void ResetConstants();
+    void ResetConstants(float lpfBeta, float autoHoldSpeed, float currentThreshold);
     virtual ~Intake();
 };
 

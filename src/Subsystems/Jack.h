@@ -17,6 +17,14 @@ private:
 public:
     Jack(int motorController, bool flipDirection);
     void SetPosition(float position);
+    bool IsExtended()
+    {
+	if(fabs(m_Position) != CONSTANT("JACK_UP"))
+	{
+		return true;
+	}
+	return false;
+    }   
     void handle();
     void ResetConstants();
     virtual ~Jack();

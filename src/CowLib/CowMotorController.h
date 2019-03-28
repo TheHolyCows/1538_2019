@@ -39,6 +39,7 @@ namespace CowLib
         void SetControlMode(CowControlMode);
         enum CowControlMode GetControlMode();
         float GetPosition();
+	void SetSensorPosition(float position);
         void SetPIDGains(float pGain, float iGain, float dGain, float fGain, double peakOutput);
         void SetMotionMagic(float accel, float velocity);
         void Set(float);

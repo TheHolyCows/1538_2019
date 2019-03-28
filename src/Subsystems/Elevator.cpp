@@ -12,18 +12,17 @@
 
 Elevator::Elevator(int motorRight, int motorLeft, int encoderA, int encoderB)
 {
-    m_MotorLeftID = motorLeft;
+	m_MotorLeftID = motorLeft;
 	m_MotorRight = new CowLib::CowMotorController(motorRight);
 	m_MotorLeft = new CowLib::CowMotorController(motorLeft);
 	m_Speed = 0;
-    m_Position = 0;
-    m_MotorLeft->SetControlMode(CowLib::CowMotorController::MOTIONMAGIC);
-    m_EncoderInchPerTick = CONSTANT("ELEVATOR_INCH_PER_TICK");
-    ResetConstants();
-    m_MotorLeft->SetInverted(false);
-    m_MotorRight->SetControlMode(CowLib::CowMotorController::FOLLOWER);
-    //m_MotorRight->GetInternalMotor()->SetInverted(true);
-    m_MotorRight->GetInternalMotor()->SetInverted(true);
+	m_Position = 0;
+	m_MotorLeft->SetControlMode(CowLib::CowMotorController::MOTIONMAGIC);
+	m_EncoderInchPerTick = CONSTANT("ELEVATOR_INCH_PER_TICK");
+	ResetConstants();
+	m_MotorLeft->SetInverted(false);
+	m_MotorRight->SetControlMode(CowLib::CowMotorController::FOLLOWER);
+	m_MotorRight->GetInternalMotor()->SetInverted(true);
 }
 
 void Elevator::SetSpeed(float speed)
@@ -46,7 +45,7 @@ void Elevator::SetPosition(float position)
 
 float Elevator::GetDistance()
 {
-	//return m_Encoder->GetDistance();
+	return m_MotorLeft->GetPosition() * m_EncoderInchPerTick;
 }
 
 void Elevator::ResetConstants()
@@ -58,17 +57,22 @@ void Elevator::ResetConstants()
 }
 bool Elevator::AtTarget()
 {
-    return true;
-	//return (fabs(m_Position - m_Encoder->GetDistance()) < CONSTANT("ELEVATOR_TOLERANCE"));
+	return (fabs(m_Position - this->GetDistance()) < CONSTANT("ELEVATOR_TOLERANCE"));
 }
+void Elevator::disabledCalibration()
+{
+	float currentPosition = m_MotorLeft->GetPosition();
+	
+	if(currentPosition < 0)
+	{
+		m_MotorLeft->SetSensorPosition(0);
+	}
+}
+
 void Elevator::handle()
 {
-	//float currentPosition = m_Encoder->GetDistance();
-	//m_MotorRight->Set(-pidOutput);
-    m_MotorLeft->Set(m_Position / m_EncoderInchPerTick);
-    m_MotorRight->Set(m_MotorLeftID);
-
-	//std::cout << "Current elevator: " << currentPosition << " PID: " << pidOutput << std::endl;
+	m_MotorLeft->Set(m_Position / m_EncoderInchPerTick);
+ 	m_MotorRight->Set(m_MotorLeftID);
 }
 
 
@@ -76,6 +80,5 @@ Elevator::~Elevator()
 {
 	delete m_MotorRight;
 	delete m_MotorLeft;
-	//delete m_Encoder;
 }
 

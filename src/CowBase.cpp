@@ -45,10 +45,9 @@ void CowBase::AutonomousInit()
     m_Bot->GetGyro()->FinalizeCalibration();
     m_Bot->GetGyro()->ResetAngle();
 
-    //m_AutoController->SetCommandList(AutoModes::GetInstance()->GetCommandList());
-    //m_Bot->SetController(m_AutoController);
+    m_AutoController->SetCommandList(AutoModes::GetInstance()->GetCommandList());
+    m_Bot->SetController(m_AutoController);
     m_Bot->Reset();
-    m_Bot->SetController(m_OpController);
 }
 
 void CowBase::TeleopInit()
@@ -93,9 +92,14 @@ void CowBase::DisabledPeriodic()
             /*
              * POSITION FIRST_OWNERSHIP SECOND_OWNERSHIP DRIVE
              */
-            //AutoModes::GetInstance()->NextMode();
+            AutoModes::GetInstance()->NextMode();
         }
     }
+   if(m_Bot)
+   {
+	m_Bot->GetElevator()->disabledCalibration();
+	m_Bot->GetArm()->DisabledCalibration();
+   }
 //    m_Bot->PrintToDS();
 }
 

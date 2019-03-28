@@ -38,8 +38,8 @@ CowRobot::CowRobot()
 
     m_Elevator = new Elevator (2, 3, MXP_QEI_3_A, MXP_QEI_3_B);
     m_Arm = new Arm(6, CONSTANT("ARM_PEAK_OUTPUT"), CONSTANT("ARM_UP_LIMIT"), CONSTANT("ARM_DOWN"), "ARM", true, 0, CONSTANT("ARM_PEAK_OUTPUT"));
-    m_CargoIntake = new Intake(14);
-    m_HatchIntake = new Intake(5);
+    m_CargoIntake = new Intake(14, true, CONSTANT("CARGO_AUTOHOLD_SPEED"), CONSTANT("CARGO_INTAKE_CURRENT_LPF"), CONSTANT("CARGO_CURRENT_THRESHOLD"));
+    m_HatchIntake = new Intake(5, true, CONSTANT("HATCH_AUTOHOLD_SPEED"), CONSTANT("HATCH_INTAKE_CURRENT_LPF"), CONSTANT("HATCH_CURRENT_THRESHOLD"));
 
     m_RightJack = new Jack(1, true);
     m_LeftJack = new Jack(4, true);
@@ -70,9 +70,8 @@ CowRobot::CowRobot()
     m_AccelY_LPF = new CowLib::CowLPF(CONSTANT("TIP_LPF"));
     m_TipTime = 0;
     m_Tipping = false;
-    //limeLight = NetworkTable::GetTable("limelight");
+
     m_LimelightForward = nt::NetworkTableInstance::GetDefault().GetTable("limelight-front");
-    m_LimelightBackward = nt::NetworkTableInstance::GetDefault().GetTable("limelight-back");
     m_CameraServer = frc::CameraServer::GetInstance();
     cs::UsbCamera temp = m_CameraServer->StartAutomaticCapture();
     
@@ -95,7 +94,8 @@ void CowRobot::Reset()
     m_LoadDetect_LPF->UpdateBeta(CONSTANT("LOAD_DETECT_LPF"));
     m_Elevator->ResetConstants();
     m_Arm->ResetConstants(CONSTANT("ARM_UP_LIMIT"), CONSTANT("ARM_DOWN"), CONSTANT("ARM_PEAK_OUTPUT"));
-    m_CargoIntake->ResetConstants();
+    m_CargoIntake->ResetConstants(CONSTANT("CARGO_INTAKE_CURRENT_LPF"), CONSTANT("CARGO_AUTO_HOLD_SPEED"), CONSTANT("CARGO_CURRENT_THRESHOLD"));
+    m_HatchIntake->ResetConstants(CONSTANT("HATCH_INTAKE_CURRENT_LPF"), CONSTANT("HATCH_AUTO_HOLD_SPEED"), CONSTANT("HATCH_CURRENT_THRESHOLD"));
 }
 
 void CowRobot::SetController(GenericController *controller)
@@ -109,6 +109,24 @@ void CowRobot::PrintToDS()
     {
         m_DSUpdateCount = 0;
     }
+}
+
+bool CowRobot::DoVisionTracking(float speed, float yThreshold)
+{
+	GetLimelight()->PutNumber("pipeline", 0);
+	GetLimelight()->PutNumber("ledMode", 3);
+	DriveSpeedTurn(speed, GetLimelight()->GetNumber("tx",0.0)*CONSTANT("LIMELIGHT_X_KP"), 0);
+
+	//Limelight has valid targets
+	if(GetLimelight()->GetNumber("tv", 0) == 1)
+	{
+		//If the target y offset is lower than what ever we want it to be, max for LL2 is 24.85
+		if(GetLimelight()->GetNumber("ty", 24.85) < yThreshold)
+		{
+			return true;
+		}  
+		return false;
+	}
 }
 
 // Used to handle the recurring logic funtions inside the robot.
@@ -146,16 +164,6 @@ void CowRobot::handle()
         //          << m_DriveEncoder->Get() << " "
         //      << m_Gyro->GetAngle() << std::endl;std::cout << "Heading: " << m_Gyro->GetAngle() << " " << m_DriveEncoder->GetDistance() << std::endl;
 
-        //
-
-        
-
-        //std::cout << "Elevator: " << m_Elevator->GetDistance() << " SP: " << m_Elevator->GetSetPoint() << std::endl;
-        //std::cout << "Current State:" << m_StateMachine->GetCurrentStateString() << " Target State: " << m_StateMachine->GetTargetStateString() << std::endl;
-        //std::cout << "Arm: " << m_Arm->GetPosition() << " SP: " << m_Arm->GetSetpoint() << std::endl;
-        //std::cout << "Wrist: " << m_Wrist->GetPosition() + m_Arm->GetPosition() << " SP: " << m_Wrist->GetSetpoint() << std::endl;
-
-        //std::cout << "Elevator at target: " << m_Elevator->AtTarget() << " Arm at target: " << m_Arm-> AtTarget() << " Wrist at target: " << m_Wrist->AtTarget() << std::endl << std::endl;
     }
 
     frc::SmartDashboard::PutNumber("Elevator SP", m_Elevator->GetSetPoint());
@@ -164,21 +172,9 @@ void CowRobot::handle()
     frc::SmartDashboard::PutNumber("Arm SP", m_Arm->GetSetpoint() * m_Arm->GetDegreesPerTick());
     frc::SmartDashboard::PutNumber("Elevator At Target:", m_Elevator->AtTarget());
     frc::SmartDashboard::PutNumber("Arm At Target:", m_Arm->AtTarget());
-    // double LoadingStationLPF = m_LoadDetect_LPF->Calculate(0);
-    // //std::cout << "start time: " << m_StartTime << " match time: " << m_MatchTime << std::endl;
-    // if (m_DetectLoadingStation)
-    // {
-    //     if (LoadingStationLPF > CONSTANT("LS_DETECT_THRESHOLD"))
-    //     {
-    //         m_Intake->SetSpeed(0);
-    //         m_Elevator->SetPosition(CONSTANT("ELEVATOR_LOADING_STATION_FINISH"));
-    //         if (m_Elevator->AtTarget())
-    //         {
-    //             m_DetectLoadingStation = false;
-    //         }
-    //     }
-        
-    // }
+    frc::SmartDashboard::PutNumber("Drive distance", GetDriveDistance());
+    frc::SmartDashboard::PutNumber("lEnc", m_DriveEncoderLeft->GetDistance());
+    frc::SmartDashboard::PutNumber("rEnc", m_DriveEncoderRight->GetDistance());
 
     m_Elevator->handle();
     m_Arm->handle();
@@ -186,11 +182,12 @@ void CowRobot::handle()
     m_HatchIntake->handle();
     m_RightJack->handle();
     m_LeftJack->handle();
-    m_Canifier->Handle();
+    //m_Canifier->Handle();
 
-    //frc::SmartDashboard::PutNumber("Drive distance", GetDriveDistance());
-    //frc::SmartDashboard::PutNumber("lEnc", m_DriveEncoderLeft->GetDistance());
-    //frc::SmartDashboard::PutNumber("rEnc", m_DriveEncoderRight->GetDistance());
+    if(m_CargoIntake->BlinkLED() || m_HatchIntake->BlinkLED())
+    {
+	GetLimelight()->PutNumber("ledMode", 2);
+    }
 
     m_DSUpdateCount++;
 }

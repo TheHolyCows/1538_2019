@@ -37,6 +37,7 @@ public:
     {
 
     }
+    void DisabledCalibration();
 	void handle();
 
 	float GetPosition();

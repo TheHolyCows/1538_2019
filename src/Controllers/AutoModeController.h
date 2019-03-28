@@ -13,16 +13,16 @@ typedef enum
 {
     CMD_NULL = 0,
     CMD_TURN,
+    CMD_BOUNDED_TURN,
     CMD_TURN_INTAKE,
     CMD_DRIVE_DISTANCE,
-	CMD_DRIVE_DISTANCE_INTAKE,
+    CMD_DRIVE_DISTANCE_INTAKE,
     CMD_HOLD_DISTANCE,
-	CMD_HOLD_DISTANCE_INTAKE,
-	CMD_ARM_UP,
-	CMD_ARM_DOWN,
-	CMD_AUTO_FWD_LOW,
-	CMD_AUTO_FWD,
-	CMD_AUTO_REV,
+    CMD_HOLD_DISTANCE_INTAKE,
+    CMD_VISION_HATCH_INTAKE,
+    CMD_VISION_ALIGN,
+    CMD_ARM_UP,
+    CMD_ARM_DOWN,
     CMD_LEFT_ENCODER,
     CMD_RIGHT_ENCODER,
     CMD_WAIT
@@ -37,6 +37,7 @@ public:
     double m_Heading;
     double m_Speed;
     double m_ElevatorPos;
+    bool m_HatchIntake;
     double m_Timeout;
     
     RobotCommand() :
@@ -44,19 +45,21 @@ public:
         m_EncoderCount(0),
         m_Heading(0),
         m_Speed(0),
-		m_ElevatorPos(0),
+	m_ElevatorPos(0),
+	m_HatchIntake(false),
         m_Timeout(0)
     {
     }
     
     RobotCommand(e_RobotCommand cmd,
             double encoder, double heading,
-                 double speed, double elevatorPos, double timeout) :
+                 double speed, double elevatorPos, bool hatchIntake, double timeout) :
         m_Command(cmd),
         m_EncoderCount(encoder),
         m_Heading(heading),
         m_Speed(speed),
-		m_ElevatorPos(elevatorPos),
+	m_ElevatorPos(elevatorPos),
+	m_HatchIntake(hatchIntake),
         m_Timeout(timeout)
     {
     }

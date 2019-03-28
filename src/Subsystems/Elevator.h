@@ -16,16 +16,17 @@ class Elevator {
 private:
 	CowLib::CowMotorController *m_MotorRight;
 	CowLib::CowMotorController *m_MotorLeft;
-    int m_MotorLeftID;
+    	int m_MotorLeftID;
 	float m_Speed;
 	frc::Encoder *m_Encoder;
 	CowLib::CowPID *m_PID;
 	float m_Position;
-    float m_EncoderInchPerTick;
+    	float m_EncoderInchPerTick;
 public:
 	Elevator(int motorRight, int motorLeft, int encoderA, int encoderB);
 	virtual ~Elevator();
 	void handle();
+	void disabledCalibration();
 	void SetSpeed(float speed);
 	void SetPosition(float position);
 	float GetSetPoint()
