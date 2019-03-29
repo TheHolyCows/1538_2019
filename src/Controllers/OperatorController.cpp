@@ -5,6 +5,8 @@ OperatorController::OperatorController(CowControlBoard *controlboard)
     :
     m_CB(controlboard)
 {
+	m_ClimbLatch = new CowLib::CowLatch();
+	m_ClimbSetHeight = false;
 }
 
 void OperatorController::handle(CowRobot *bot)
@@ -48,21 +50,40 @@ void OperatorController::handle(CowRobot *bot)
     {
         bot->GetLeftJack()->SetPosition(-CONSTANT("JACK_UP"));
         bot->GetRightJack()->SetPosition(CONSTANT("JACK_UP"));
+	if(bot->GetLeftJack()->IsExtended())
+	{
+		bot->GetElevator()->SetPosition(0);
+	}
     }
     else
     {
-        if(m_CB->GetOperatorButton(3))
+	//The full send button
+        if(m_ClimbLatch->Latch(m_CB->GetOperatorButton(3)))
         {
-            bot->GetLeftJack()->SetPosition(-CONSTANT("JACK_DOWN"));
-            bot->GetRightJack()->SetPosition(CONSTANT("JACK_DOWN"));
-            bot->GetElevator()->SetPosition(-3);
-        }   
+	    if (!m_ClimbSetHeight)
+	    {
+		bot->GetElevator()->SetPosition(CONSTANT("ELEVATOR_CLIMB_POS"));
+		m_ClimbSetHeight = true;
+	    }
+	    else
+	    {
+			m_ClimbSetHeight = false;
+			bot->GetLeftJack()->SetPosition(-CONSTANT("JACK_DOWN"));
+			bot->GetRightJack()->SetPosition(CONSTANT("JACK_DOWN"));
+            		bot->GetArm()->SetPosition(CONSTANT("ARM_DOWN_CLIMB"));
+			bot->GetElevator()->SetPosition(-3);
+	    }
+        }
+	else if(!m_CB->GetOperatorButton(3))
+	{
+		m_ClimbLatch->ResetLatch();
+	}
     }
 
     //We need to hand over cargo intake controls to the driver stick
     if(bot->GetLeftJack()->IsExtended())
     {
-	bot->GetCargoIntake()->SetSpeed(-m_CB->GetDriveStickY(), true);
+	bot->GetCargoIntake()->SetSpeed(m_CB->GetDriveStickY(), true);
     }
     else
     {
@@ -136,14 +157,18 @@ void OperatorController::handle(CowRobot *bot)
         {
             bot->GetElevator()->SetPosition(CONSTANT("CARGO_ELV_HP"));
         }
+        else if(m_CB->GetOperatorButton(7))
+        {
+            bot->GetElevator()->SetPosition(CONSTANT("CARGO_ELV_HP"));
+        }
     }
     if(bot->GetElevator()->GetSetPoint() == CONSTANT("HATCH_ELV_LVL3"))
     {
         bot->GetArm()->SetPosition(CONSTANT("HATCH_ARM_LVL3"));
-        //if(!m_CB->GetOperatorButton(8))
-        //{
-        //    bot->GetArm()->SetPosition(CONSTANT("ARM_DOWN"));
-        //}
+    }
+    else if(bot->GetElevator()->GetSetPoint() == CONSTANT("CARGO_ELV_LVL1") && !m_CB->GetOperatorButton(8))
+    {
+        bot->GetArm()->SetPosition(CONSTANT("CARGO_ARM_LVL1"));
     }
     else
     {

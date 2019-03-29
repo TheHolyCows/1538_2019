@@ -7,6 +7,7 @@ Intake::Intake(int motorController, bool autoHold, float autoHoldSpeed, float lp
 {
     m_Motor = new CowLib::CowMotorController(motorController);
     m_Speed = 0;
+    m_RequestedSpeed = 0;
     m_LimitCurrent = false;
     m_Current = 0;
     m_CurrentThreshold = currentThreshold;
@@ -23,8 +24,8 @@ void Intake::SetSpeed(float speed, bool clearObject)
 	m_DetectObject = false;
 	m_CurrentLPF->UpdateBeta(m_LpfBeta);
     }
-
-    m_Speed = speed;
+    
+    m_RequestedSpeed = speed;
 }
 
 bool Intake::DetectedObject()
@@ -39,10 +40,22 @@ void Intake::handle()
     if (m_Current > m_CurrentThreshold)
     {
         m_DetectObject = true;
+	m_HasBlinkedLed = false;
     }
     if(m_AutoHold && m_DetectObject)
     {
-    	m_Speed = m_AutoHoldSpeed;
+	if(m_RequestedSpeed != 0)
+	{
+		m_Speed = m_RequestedSpeed;
+	}
+	else
+	{
+    		m_Speed = m_AutoHoldSpeed;
+	}
+    }
+    else
+    {
+	m_Speed = m_RequestedSpeed;
     }
     m_Motor->Set(m_Speed);
 }

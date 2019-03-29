@@ -19,7 +19,8 @@ class OperatorController : public GenericController
 private:
     OperatorController();
     CowControlBoard *m_CB;
-
+    CowLib::CowLatch *m_ClimbLatch;
+    bool m_ClimbSetHeight;
 //    float time;
 //    float previousTime;
 //    float speed;

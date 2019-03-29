@@ -13,7 +13,7 @@
 Arm::Arm(int motorController, double maxSpeed, double upLimit, double downLimit, std::string name, bool changeDirection, double degreesPerTick, double peakOutput)
 {
 	m_Motor = new CowLib::CowMotorController(motorController);
-	m_Motor->SetControlMode(CowLib::CowMotorController::MOTIONMAGIC);
+	m_Motor->SetControlMode(CowLib::CowMotorController::POSITION);
 	m_Position = 0;
 	m_DegreesPerTick = degreesPerTick;
     //m_MaxSpeed = maxSpeed;

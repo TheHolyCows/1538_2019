@@ -12,6 +12,7 @@ class Intake
 {
 private:
     CowLib::CowMotorController *m_Motor;
+    float m_RequestedSpeed;
     float m_Speed;
     bool m_LimitCurrent;
     double m_Current;
