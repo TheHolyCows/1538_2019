@@ -18,16 +18,19 @@ void OperatorController::handle(CowRobot *bot)
     float b_color = m_CB->GetDriveAxis(0);
     b_color = fabs(b_color*254);
     bot->GetCanifier()->SetLEDColor(r_color, g_color, b_color);
+    bool doingTracking = false;
     if(m_CB->GetDriveButton(1))
     {
+	doingTracking = true;
         //bot->TurnToHeading(90);
         //bot->DriveDistanceWithHeading(0, 12, 0.5);
-	bool acquired = bot->DoVisionTracking(0.375);
-    	bot->GetCargoIntake()->SetSpeed(-1, true);
-	if(acquired)
-	{
-		std::cout << "Got the hatch!" << std::endl;
-	}
+
+	//	bool acquired = bot->DoVisionTracking(-CONSTANT("AUTO_TRACK_SPEED"));
+	//	if(acquired)
+	//	{
+	//    		bot->GetHatchIntake()->SetSpeed(-1, true);
+	//		std::cout << "Done!" << std::endl;
+	//	}
     }
     else
     {
@@ -116,7 +119,10 @@ void OperatorController::handle(CowRobot *bot)
     	else
     	{
     	        bot->GetCargoIntake()->SetSpeed(0, false);
-    	        bot->GetHatchIntake()->SetSpeed(0, false);
+		if(!doingTracking)
+		{
+    	        	bot->GetHatchIntake()->SetSpeed(0, false);
+		}
     	}
     }
 

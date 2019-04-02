@@ -78,6 +78,9 @@ CowRobot::CowRobot()
     std::cout << "Set pixelformat: " << temp.SetPixelFormat(cs::VideoMode::kMJPEG) << std::endl;
     std::cout << "Set resolution: " << temp.SetResolution(CONSTANT("CAMERA_W"), CONSTANT("CAMERA_H")) << std::endl;
     std::cout << "Set framerate: " << temp.SetFPS(CONSTANT("CAMERA_FPS")) << std::endl;
+
+    m_Limelight_PID_P = 0;
+    m_Limelight_PID_D = 0;
 }
 
 void CowRobot::Reset()
@@ -111,17 +114,24 @@ void CowRobot::PrintToDS()
     }
 }
 
-bool CowRobot::DoVisionTracking(float speed, float yThreshold)
+bool CowRobot::DoVisionTracking(float speed, float threshold)
 {
 	GetLimelight()->PutNumber("pipeline", 0);
 	GetLimelight()->PutNumber("ledMode", 3);
-	DriveSpeedTurn(speed, GetLimelight()->GetNumber("tx",0.0)*CONSTANT("LIMELIGHT_X_KP"), 0);
+
+	float limelightP = GetLimelight()->GetNumber("tx",0.0);
+	m_Limelight_PID_D = m_Limelight_PID_P - m_Limelight_PID_D;
+	m_Limelight_PID_P = limelightP;
+
+	float pid = (m_Limelight_PID_P * CONSTANT("LIMELIGHT_X_KP"));
+	pid += (m_Limelight_PID_D * CONSTANT("LIMELIGHT_X_KD"));
+	DriveSpeedTurn(speed, pid, 0);
 
 	//Limelight has valid targets
 	if(GetLimelight()->GetNumber("tv", 0) == 1)
 	{
-		//If the target y offset is lower than what ever we want it to be, max for LL2 is 24.85
-		if(GetLimelight()->GetNumber("ty", 24.85) < yThreshold)
+		//If the target area is larger than the threshold, we likely have the gamepiece or scored
+		if(GetLimelight()->GetNumber("ta", 0) >= threshold)
 		{
 			return true;
 		}  
@@ -175,6 +185,7 @@ void CowRobot::handle()
     frc::SmartDashboard::PutNumber("Drive distance", GetDriveDistance());
     frc::SmartDashboard::PutNumber("lEnc", m_DriveEncoderLeft->GetDistance());
     frc::SmartDashboard::PutNumber("rEnc", m_DriveEncoderRight->GetDistance());
+    frc::SmartDashboard::PutNumber("Gyro", m_Gyro->GetAngle());
 
     m_Elevator->handle();
     m_Arm->handle();

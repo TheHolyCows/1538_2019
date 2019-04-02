@@ -85,6 +85,9 @@ private:
     frc::CameraServer *m_CameraServer;
     cs::UsbCamera *m_UsbCamera;
 
+    float m_Limelight_PID_P;
+    float m_Limelight_PID_D;
+
 
 public:
     CowRobot();
@@ -114,7 +117,7 @@ public:
     {
     	return m_LimelightForward;
     }
-    bool DoVisionTracking(float speed, float yThreshold = 24.85);
+    bool DoVisionTracking(float speed, float threshold = 5.00);
     void QuickTurn(float turn);
     
     void StartTime();

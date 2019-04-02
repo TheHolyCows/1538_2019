@@ -87,7 +87,7 @@ void Arm::handle()
         m_Motor->Set(m_Position);
     }
     //SmartDashboard::PutNumber("Arm", (m_Motor->GetPosition()-m_PlanetaryHardstop));
-	std::cout << m_Name << " position: " << m_Position << std::endl;
+	//std::cout << m_Name << " position: " << m_Position << std::endl;
 }
 void Arm::SetCurrentLimit(float peakAmps, float continuousAmps, int peakDuration, int ms)
 {

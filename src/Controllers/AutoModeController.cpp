@@ -29,6 +29,8 @@ void AutoModeController::reset()
 void AutoModeController::handle(CowRobot *bot)
 {
 	bool result = false;
+        bot->GetLimelight()->PutNumber("pipeline", 0);
+        bot->GetLimelight()->PutNumber("ledMode", 1);
 
 	// Run the command
 	switch(m_CurrentCommand.m_Command)
@@ -57,10 +59,42 @@ void AutoModeController::handle(CowRobot *bot)
 
 		break;
 	}
-	case CMD_HOLD_DISTANCE:
+	case CMD_VISION_HATCH_INTAKE:
+	{
+		bot->DoVisionTracking(m_CurrentCommand.m_Speed);
+		bot->GetElevator()->SetPosition(m_CurrentCommand.m_ElevatorPos);
+                bot->GetHatchIntake()->SetSpeed(1, false);
+		//bot->GetArm()->SetIntakeSpeed(-0.2);
+
+		//result = false;
+		result = bot->GetHatchIntake()->BlinkLED();
+		break;
+	}
+	case CMD_VISION_ALIGN:
+	{
+		bot->DoVisionTracking(m_CurrentCommand.m_Speed,4.5);
+		bot->GetElevator()->SetPosition(m_CurrentCommand.m_ElevatorPos);
+                //bot->GetHatchIntake()->SetSpeed(1, false);
+		//bot->GetArm()->SetIntakeSpeed(-0.2);
+
+		result = bot->DoVisionTracking(m_CurrentCommand.m_Speed);
+		break;
+	}
+	case CMD_PRESTART:
+	{
+		bot->DriveLeftRight(0, 0);
+		bot->GetElevator()->SetPosition(CONSTANT("ELEVATOR_PRESTART"));
+		bot->GetArm()->SetPosition(CONSTANT("ARM_PRESTART"));
+                bot->GetHatchIntake()->SetSpeed(1, false);
+
+		result = bot->GetHatchIntake()->DetectedObject();
+		break;
+	}
+case CMD_HOLD_DISTANCE:
 	{
 		bot->DriveDistanceWithHeading(m_CurrentCommand.m_Heading, m_CurrentCommand.m_EncoderCount, m_CurrentCommand.m_Speed);
 		bot->GetElevator()->SetPosition(m_CurrentCommand.m_ElevatorPos);
+                bot->GetHatchIntake()->SetSpeed(0, false);
 		//bot->GetArm()->SetIntakeSpeed(-0.2);
 
 		result = false;
@@ -172,6 +206,14 @@ void AutoModeController::handle(CowRobot *bot)
 
 		break;
 	}
+	case CMD_INTAKE_EXHAUST:
+	{
+		doNothing(bot);
+		bot->ResetEncoders();
+                bot->GetHatchIntake()->SetSpeed(-1, true);
+
+		break;
+	}
 	default:
 	{
 		doNothing(bot);
@@ -186,7 +228,8 @@ void AutoModeController::handle(CowRobot *bot)
 		// This command is done, go get the next one
 		if(m_CommandList.size() > 0 )
 		{
-			if(m_CurrentCommand.m_Command == CMD_TURN)
+			if(m_CurrentCommand.m_Command == CMD_TURN || 
+				m_CurrentCommand.m_Command == CMD_VISION_HATCH_INTAKE)
 			{
 				bot->ResetEncoders();
 			}
