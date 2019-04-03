@@ -14,6 +14,8 @@ Arm::Arm(int motorController, double maxSpeed, double upLimit, double downLimit,
 {
 	m_Motor = new CowLib::CowMotorController(motorController);
 	m_Motor->SetControlMode(CowLib::CowMotorController::POSITION);
+    m_Motor->GetInternalMotor()->ConfigRemoteFeedbackFilter(15, RemoteSensorSource::RemoteSensorSource_CANifier_Quadrature, 0, 0);
+    m_Motor->GetInternalMotor()->ConfigSelectedFeedbackSensor(RemoteFeedbackDevice::RemoteFeedbackDevice_RemoteSensor0);
 	m_Position = 0;
 	m_DegreesPerTick = degreesPerTick;
     //m_MaxSpeed = maxSpeed;
