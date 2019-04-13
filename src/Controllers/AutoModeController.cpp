@@ -85,9 +85,9 @@ void AutoModeController::handle(CowRobot *bot)
 		bot->DriveLeftRight(0, 0);
 		bot->GetElevator()->SetPosition(CONSTANT("ELEVATOR_PRESTART"));
 		bot->GetArm()->SetPosition(CONSTANT("ARM_PRESTART"));
-                bot->GetHatchIntake()->SetSpeed(1, false);
+        //bot->GetHatchIntake()->SetSpeed(1, false);
 
-		result = bot->GetHatchIntake()->DetectedObject();
+		result = false;
 		break;
 	}
 case CMD_HOLD_DISTANCE:
