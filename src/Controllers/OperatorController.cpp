@@ -109,7 +109,7 @@ void OperatorController::handle(CowRobot *bot)
     	     //10 on = cargo mode
     	     if (m_CB->GetOperatorButton(10))
     	     {
-    	         bot->GetCargoIntake()->SetSpeed(-1, true);
+    	         bot->GetCargoIntake()->SetSpeed(CONSTANT("CARGO_EXHAUST_SPEED"), true);
     	     }
     	     else
     	     {

@@ -19,7 +19,7 @@ AutoModes::AutoModes()
 	m_Modes["Nothing"].push_back(RobotCommand(CMD_WAIT, 0, 0, 0, 0, false, 0));
 
 	m_Modes["Test"];
-	m_Modes["Test"].push_back(RobotCommand(CMD_PRESTART, 0, 0, 0, 0, true, 0.125));
+	m_Modes["Test"].push_back(RobotCommand(CMD_PRESTART, 0, 0, 0, 0, true, 0.375));
 	m_Modes["Test"].push_back(RobotCommand(CMD_VISION_HATCH_INTAKE, 0, 0, 0, 0, true, 0.25));
 	
     m_Modes["Two Hatch Rocket - Right"];
@@ -82,11 +82,10 @@ AutoModes::AutoModes()
    
 	m_Modes["Two Hatch Cargo Ship - Right"];
     m_Modes["Two Hatch Cargo Ship - Right"].push_back(RobotCommand(CMD_RIGHT_ENCODER, 0, 0, 0, 5, true, 0.01)); 
-	m_Modes["Two Hatch Cargo Ship - Right"].push_back(RobotCommand(CMD_PRESTART, 0, 0, 0, 0, true, 0.125));
-	m_Modes["Two Hatch Cargo Ship - Right"].push_back(RobotCommand(CMD_INTAKE_EXHAUST, 0, 0, 0, 0, true, 0.2));
-	//m_Modes["Two Hatch Cargo Ship - Right"].push_back(RobotCommand(CMD_PRESTART, 0, 0, 0, 0, true, 2)); 
+	m_Modes["Two Hatch Cargo Ship - Right"].push_back(RobotCommand(CMD_PRESTART, 0, 0, 0, 0, true, 0.375));
+	m_Modes["Two Hatch Cargo Ship - Right"].push_back(RobotCommand(CMD_VISION_HATCH_INTAKE, 0, 0, 0, 0, true, 0.25));
 	m_Modes["Two Hatch Cargo Ship - Right"].push_back(RobotCommand(CMD_ARM_DOWN, 0, 0, 0, 0, true, 0.25));
-	m_Modes["Two Hatch Cargo Ship - Right"].push_back(RobotCommand(CMD_DRIVE_DISTANCE, 45, 0, 0.7, CONSTANT("HATCH_ELV_LVL1"), false, 1.5));
+	m_Modes["Two Hatch Cargo Ship - Right"].push_back(RobotCommand(CMD_DRIVE_DISTANCE, 45, 0, 0.35, CONSTANT("HATCH_ELV_LVL1"), false, 1.5));
 	m_Modes["Two Hatch Cargo Ship - Right"].push_back(RobotCommand(CMD_VISION_ALIGN, 0, 0, -0.2, CONSTANT("HATCH_ELV_LVL1"), false, 7));
 	m_Modes["Two Hatch Cargo Ship - Right"].push_back(RobotCommand(CMD_INTAKE_EXHAUST, 0, 0, 0, CONSTANT("HATCH_ELV_LVL1"), false, 0.34));
 	m_Modes["Two Hatch Cargo Ship - Right"].push_back(RobotCommand(CMD_DRIVE_DISTANCE, -18, 0, 0.7, CONSTANT("HATCH_ELV_LVL1"), false, 1.5));

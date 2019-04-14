@@ -30,6 +30,7 @@ private:
     int m_DSUpdateCount;
     
     GenericController *m_Controller;
+    GenericController *m_ControllerBackup;
     
     // Drive Motors
     CowLib::CowMotorController *m_LeftDriveA;
@@ -55,6 +56,7 @@ private:
     Elevator *m_Elevator;
     Arm *m_Arm;
     Intake *m_CargoIntake;
+    CowLib::CowMotorController *m_CargoIntake_B;
     Intake *m_HatchIntake;
     Jack *m_RightJack;
     Jack *m_LeftJack;
@@ -85,16 +87,15 @@ private:
     frc::CameraServer *m_CameraServer;
     cs::UsbCamera *m_UsbCamera;
 
-    float m_Limelight_PID_P;
-    float m_Limelight_PID_D;
-
-
+    CowLib::CowPID *m_Limelight_PID;
 public:
     CowRobot();
     void Reset();
     void GyroHandleCalibration();
     void GyroFinalizeCalibration();
     void SetController(GenericController *controller);
+    void SetBackupController(GenericController *controller);
+    void UseBackupController();
     void PrintToDS();
     double GetDriveDistance();
     bool DriveDistance(double distance);

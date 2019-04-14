@@ -10,6 +10,7 @@ CowRobot::CowRobot()
     m_DSUpdateCount = 0;
         
     m_Controller = NULL;
+    m_ControllerBackup = NULL;
 
     // Set up drive motors
     m_LeftDriveA = new CowLib::CowMotorController(DRIVE_LEFT_A);
@@ -39,6 +40,10 @@ CowRobot::CowRobot()
     m_Elevator = new Elevator (2, 3, MXP_QEI_3_A, MXP_QEI_3_B);
     m_Arm = new Arm(6, CONSTANT("ARM_PEAK_OUTPUT"), CONSTANT("ARM_UP_LIMIT"), CONSTANT("ARM_DOWN"), "ARM", true, 0, CONSTANT("ARM_PEAK_OUTPUT"));
     m_CargoIntake = new Intake(14, true, CONSTANT("CARGO_AUTOHOLD_SPEED"), CONSTANT("CARGO_INTAKE_CURRENT_LPF"), CONSTANT("CARGO_CURRENT_THRESHOLD"));
+    m_CargoIntake_B = new CowLib::CowMotorController(7);
+    m_CargoIntake_B->SetControlMode(CowLib::CowMotorController::FOLLOWER);
+    m_CargoIntake_B->GetInternalMotor()->SetInverted(true);
+
     m_HatchIntake = new Intake(5, true, CONSTANT("HATCH_AUTOHOLD_SPEED"), CONSTANT("HATCH_INTAKE_CURRENT_LPF"), CONSTANT("HATCH_CURRENT_THRESHOLD"));
 
     m_RightJack = new Jack(1, true);
@@ -75,12 +80,11 @@ CowRobot::CowRobot()
     m_CameraServer = frc::CameraServer::GetInstance();
     cs::UsbCamera temp = m_CameraServer->StartAutomaticCapture();
     
-    std::cout << "Set pixelformat: " << temp.SetPixelFormat(cs::VideoMode::kMJPEG) << std::endl;
+    std::cout << "Set pixelformat: " << temp.SetPixelFormat(cs::VideoMode::kYUYV) << std::endl;
     std::cout << "Set resolution: " << temp.SetResolution(CONSTANT("CAMERA_W"), CONSTANT("CAMERA_H")) << std::endl;
     std::cout << "Set framerate: " << temp.SetFPS(CONSTANT("CAMERA_FPS")) << std::endl;
 
-    m_Limelight_PID_P = 0;
-    m_Limelight_PID_D = 0;
+    m_Limelight_PID = new CowLib::CowPID(CONSTANT("LIMELIGHT_X_KP"), 0, CONSTANT("LIMELIGHT_X_KD"), 0);
 }
 
 void CowRobot::Reset()
@@ -99,11 +103,25 @@ void CowRobot::Reset()
     m_Arm->ResetConstants(CONSTANT("ARM_UP_LIMIT"), CONSTANT("ARM_DOWN"), CONSTANT("ARM_PEAK_OUTPUT"));
     m_CargoIntake->ResetConstants(CONSTANT("CARGO_INTAKE_CURRENT_LPF"), CONSTANT("CARGO_AUTO_HOLD_SPEED"), CONSTANT("CARGO_CURRENT_THRESHOLD"));
     m_HatchIntake->ResetConstants(CONSTANT("HATCH_INTAKE_CURRENT_LPF"), CONSTANT("HATCH_AUTO_HOLD_SPEED"), CONSTANT("HATCH_CURRENT_THRESHOLD"));
+    m_Limelight_PID->UpdateConstants(CONSTANT("LIMELIGHT_X_KP"), 0, CONSTANT("LIMELIGHT_X_KD"), 0);
 }
 
 void CowRobot::SetController(GenericController *controller)
 {
     m_Controller = controller;
+}
+
+void CowRobot::SetBackupController(GenericController *controller)
+{
+    m_ControllerBackup = controller;
+}
+
+void CowRobot::UseBackupController()
+{
+    if(m_ControllerBackup)
+    {
+	m_Controller = m_ControllerBackup;
+    }
 }
 
 void CowRobot::PrintToDS()
@@ -119,13 +137,10 @@ bool CowRobot::DoVisionTracking(float speed, float threshold)
 	GetLimelight()->PutNumber("pipeline", 0);
 	GetLimelight()->PutNumber("ledMode", 3);
 
-	float limelightP = GetLimelight()->GetNumber("tx",0.0);
-	m_Limelight_PID_D = m_Limelight_PID_P - m_Limelight_PID_D;
-	m_Limelight_PID_P = limelightP;
-
-	float pid = (m_Limelight_PID_P * CONSTANT("LIMELIGHT_X_KP"));
-	pid += (m_Limelight_PID_D * CONSTANT("LIMELIGHT_X_KD"));
-	DriveSpeedTurn(speed, pid, 0);
+	float limelightX = GetLimelight()->GetNumber("tx",0.0);
+	float pidOutput = m_Limelight_PID->Calculate(-limelightX);
+	
+	DriveSpeedTurn(CowLib::LimitMix(speed, CONSTANT("LIMELIGHT_MAX_SPEED")), pidOutput, 1);
 
 	//Limelight has valid targets
 	if(GetLimelight()->GetNumber("tv", 0) == 1)
@@ -190,6 +205,7 @@ void CowRobot::handle()
     m_Elevator->handle();
     m_Arm->handle();
     m_CargoIntake->handle();
+    m_CargoIntake_B->Set(14);
     m_HatchIntake->handle();
     m_RightJack->handle();
     m_LeftJack->handle();

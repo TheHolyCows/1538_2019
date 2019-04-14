@@ -14,23 +14,24 @@ Arm::Arm(int motorController, double maxSpeed, double upLimit, double downLimit,
 {
 	m_Motor = new CowLib::CowMotorController(motorController);
 	m_Motor->SetControlMode(CowLib::CowMotorController::POSITION);
-    m_Motor->GetInternalMotor()->ConfigRemoteFeedbackFilter(15, RemoteSensorSource::RemoteSensorSource_CANifier_Quadrature, 0, 0);
-    m_Motor->GetInternalMotor()->ConfigSelectedFeedbackSensor(RemoteFeedbackDevice::RemoteFeedbackDevice_RemoteSensor0);
+	m_Motor->GetInternalMotor()->ConfigRemoteFeedbackFilter(15, RemoteSensorSource::RemoteSensorSource_CANifier_Quadrature, 0, 0);
+	m_Motor->GetInternalMotor()->ConfigSelectedFeedbackSensor(RemoteFeedbackDevice::RemoteFeedbackDevice_RemoteSensor0);
 	m_Position = 0;
 	m_DegreesPerTick = degreesPerTick;
-    //m_MaxSpeed = maxSpeed;
-	
-	
+	//m_MaxSpeed = maxSpeed;
+
+
 	//SetCurrentLimit();
 
 	m_UpLimit = upLimit;
 	m_DownLimit = downLimit;
 
 	m_Name = name;
-    m_PeakOutput = peakOutput;
+	m_PeakOutput = peakOutput;
 
 	ResetConstants(upLimit, downLimit, peakOutput);
 	m_Motor->SetInverted(false);
+	m_NeedToSetGain = false;
 }
 
 bool Arm::AtTarget()
@@ -47,10 +48,18 @@ void Arm::SetPosition(float position)
 	//}
 	//else if(position > m_UpLimit)
 	//{
-//		position = m_UpLimit;
-//	}
+	//		position = m_UpLimit;
+	//	}
 	//position = position / m_DegreesPerTick;
-    //m_CalculateGain = true;
+	//m_CalculateGain = true;
+	if(m_Position != position)
+	{
+		//If the wanted position is greater than the current position, smaller numbers is a higher arm
+		if((position < -200 && m_Position > -200) || (position > -200 && m_Position < -200))
+		{
+			m_NeedToSetGain = true;
+		}
+	}
 	m_Position = position;
 }
 
@@ -61,7 +70,7 @@ float Arm::GetSetpoint()
 
 float Arm::GetPosition()
 {
-    return 0;
+	return 0;
 	//return m_Motor->GetPosition()*m_DegreesPerTick;
 }
 
@@ -72,23 +81,33 @@ void Arm::ResetConstants(double upLimit, double downLimit, double peakOutput)
 	std::cout << "In the arm reset constants" << std::endl;
 }
 
+void Arm::GainScheduler()
+{
+	if(m_NeedToSetGain)
+	{
+		m_NeedToSetGain = false;
+		m_Motor->SetPIDGains(CONSTANT("ARM_P1")*CONSTANT("DEBUG_PID"), CONSTANT("ARM_I1")*CONSTANT("DEBUG_PID"), CONSTANT("ARM_D1")*CONSTANT("DEBUG_PID"), 0, 1);
+	}
+}
+
 void Arm::DisabledCalibration()
 {
-        float currentPosition = m_Motor->GetPosition();
+	float currentPosition = m_Motor->GetPosition();
 
-        if(currentPosition > 0)
-        {
-                m_Motor->SetSensorPosition(0);
-        }
+	if(currentPosition > 0)
+	{
+		m_Motor->SetSensorPosition(0);
+	}
 }
 
 void Arm::handle()
 {
-    if(m_Motor)
-    {
-        m_Motor->Set(m_Position);
-    }
-    //SmartDashboard::PutNumber("Arm", (m_Motor->GetPosition()-m_PlanetaryHardstop));
+	if(m_Motor)
+	{
+		GainScheduler();
+		m_Motor->Set(m_Position);
+	}
+	//SmartDashboard::PutNumber("Arm", (m_Motor->GetPosition()-m_PlanetaryHardstop));
 	//std::cout << m_Name << " position: " << m_Position << std::endl;
 }
 void Arm::SetCurrentLimit(float peakAmps, float continuousAmps, int peakDuration, int ms)

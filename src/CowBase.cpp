@@ -47,6 +47,7 @@ void CowBase::AutonomousInit()
 
     m_AutoController->SetCommandList(AutoModes::GetInstance()->GetCommandList());
     m_Bot->SetController(m_AutoController);
+    m_Bot->SetBackupController(m_OpController);
     m_Bot->Reset();
 }
 
@@ -106,6 +107,11 @@ void CowBase::DisabledPeriodic()
 void CowBase::AutonomousPeriodic()
 {
     m_Bot->handle();
+    if(m_ControlBoard->GetSteeringButton(3))
+    {
+        m_Bot->UseBackupController();
+        m_Bot->Reset();
+    }
 }
 
 void CowBase::TeleopPeriodic()
