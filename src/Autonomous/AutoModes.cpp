@@ -38,8 +38,8 @@ AutoModes::AutoModes()
 	m_Modes["Two Hatch Rocket - Right"].push_back(RobotCommand(CMD_HOLD_DISTANCE, -270, 200, 0.35, CONSTANT("HATCH_ELV_LVL1"), false, 2.25));
 	m_Modes["Two Hatch Rocket - Right"].push_back(RobotCommand(CMD_TURN, 0, 140, 0, CONSTANT("HATCH_ELV_LVL1"), false, 0.7));
 	m_Modes["Two Hatch Rocket - Right"].push_back(RobotCommand(CMD_VISION_ALIGN, 0, 140, -0.2, CONSTANT("HATCH_ELV_LVL1"), false, 7));
-	m_Modes["Two Hatch Rocket - Right"].push_back(RobotCommand(CMD_INTAKE_EXHAUST, 0, 140, 0, CONSTANT("HATCH_ELV_LVL1"), false, 0.5));
-	m_Modes["Two Hatch Rocket - Right"].push_back(RobotCommand(CMD_HOLD_DISTANCE, -24, 140, 0.35, CONSTANT("HATCH_ELV_LVL1"), false, 2));
+	//m_Modes["Two Hatch Rocket - Right"].push_back(RobotCommand(CMD_INTAKE_EXHAUST, 0, 140, 0, CONSTANT("HATCH_ELV_LVL1"), false, 0.5));
+	//m_Modes["Two Hatch Rocket - Right"].push_back(RobotCommand(CMD_HOLD_DISTANCE, -24, 140, 0.35, CONSTANT("HATCH_ELV_LVL1"), false, 2));
 	m_Iterator = m_Modes.begin();
 
 	m_Modes["One Hatch Rocket - Left"];
@@ -73,8 +73,8 @@ AutoModes::AutoModes()
 	m_Modes["Two Hatch Rocket - Left"].push_back(RobotCommand(CMD_HOLD_DISTANCE, -270, -200, 0.35, CONSTANT("HATCH_ELV_LVL1"), false, 2.25));
 	m_Modes["Two Hatch Rocket - Left"].push_back(RobotCommand(CMD_TURN, 0, -140, 0, CONSTANT("HATCH_ELV_LVL1"), false, 0.7));
 	m_Modes["Two Hatch Rocket - Left"].push_back(RobotCommand(CMD_VISION_ALIGN, 0, -140, -0.2, CONSTANT("HATCH_ELV_LVL1"), false, 7));
-	m_Modes["Two Hatch Rocket - Left"].push_back(RobotCommand(CMD_INTAKE_EXHAUST, 0, -140, 0, CONSTANT("HATCH_ELV_LVL1"), false, 0.5));
-	m_Modes["Two Hatch Rocket - Left"].push_back(RobotCommand(CMD_HOLD_DISTANCE, -24, -140, 0.35, CONSTANT("HATCH_ELV_LVL1"), false, 2));
+	//m_Modes["Two Hatch Rocket - Left"].push_back(RobotCommand(CMD_INTAKE_EXHAUST, 0, -140, 0, CONSTANT("HATCH_ELV_LVL1"), false, 0.5));
+	//m_Modes["Two Hatch Rocket - Left"].push_back(RobotCommand(CMD_HOLD_DISTANCE, -24, -140, 0.35, CONSTANT("HATCH_ELV_LVL1"), false, 2));
 	m_Iterator = m_Modes.begin();
 
 
@@ -117,8 +117,8 @@ AutoModes::AutoModes()
 	m_Modes["Two Hatch Cargo and Rocket - Right"].push_back(RobotCommand(CMD_HOLD_DISTANCE, -280, 200, 0.35, CONSTANT("HATCH_ELV_LVL1"), false, 2.25));
 	m_Modes["Two Hatch Cargo and Rocket - Right"].push_back(RobotCommand(CMD_TURN, 0, 133, 0, CONSTANT("HATCH_ELV_LVL1"), false, 0.7));
 	m_Modes["Two Hatch Cargo and Rocket - Right"].push_back(RobotCommand(CMD_VISION_ALIGN, 0, 45, -0.2, CONSTANT("HATCH_ELV_LVL1"), false, 7));
-	m_Modes["Two Hatch Cargo and Rocket - Right"].push_back(RobotCommand(CMD_INTAKE_EXHAUST, 0, 45, 0, CONSTANT("HATCH_ELV_LVL1"), false, 0.5));
-	m_Modes["Two Hatch Cargo and Rocket - Right"].push_back(RobotCommand(CMD_HOLD_DISTANCE, -24, 133, 0.35, CONSTANT("HATCH_ELV_LVL1"), false, 2));
+	//m_Modes["Two Hatch Cargo and Rocket - Right"].push_back(RobotCommand(CMD_INTAKE_EXHAUST, 0, 45, 0, CONSTANT("HATCH_ELV_LVL1"), false, 0.5));
+	//m_Modes["Two Hatch Cargo and Rocket - Right"].push_back(RobotCommand(CMD_HOLD_DISTANCE, -24, 133, 0.35, CONSTANT("HATCH_ELV_LVL1"), false, 2));
 	m_Iterator = m_Modes.begin();
 	
 	m_Modes["Two Hatch Cargo and Rocket - Left"];

@@ -17,6 +17,7 @@ Arm::Arm(int motorController, double maxSpeed, double upLimit, double downLimit,
 	m_Motor->GetInternalMotor()->ConfigRemoteFeedbackFilter(15, RemoteSensorSource::RemoteSensorSource_CANifier_Quadrature, 0, 0);
 	m_Motor->GetInternalMotor()->ConfigSelectedFeedbackSensor(RemoteFeedbackDevice::RemoteFeedbackDevice_RemoteSensor0);
 	m_Position = 0;
+	m_Offset = 0;
 	m_DegreesPerTick = degreesPerTick;
 	//m_MaxSpeed = maxSpeed;
 
@@ -105,7 +106,7 @@ void Arm::handle()
 	if(m_Motor)
 	{
 		GainScheduler();
-		m_Motor->Set(m_Position);
+		m_Motor->Set(m_Position+m_Offset);
 	}
 	//SmartDashboard::PutNumber("Arm", (m_Motor->GetPosition()-m_PlanetaryHardstop));
 	//std::cout << m_Name << " position: " << m_Position << std::endl;

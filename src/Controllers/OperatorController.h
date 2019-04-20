@@ -20,6 +20,7 @@ private:
     OperatorController();
     CowControlBoard *m_CB;
     CowLib::CowLatch *m_ClimbLatch;
+    CowLib::CowLatch *m_OffsetLatch;
     bool m_ClimbSetHeight;
 //    float time;
 //    float previousTime;

@@ -37,6 +37,10 @@ class Arm
 		{
 
 		}
+		void AddOffset(float offset)
+		{
+			m_Offset += offset;
+		}
 		void GainScheduler();
 		void DisabledCalibration();
 		void handle();
@@ -50,6 +54,7 @@ class Arm
 	private:
 		CowLib::CowMotorController *m_Motor;
 		float m_Position;
+		float m_Offset;
 		float m_UpLimit;
 		float m_DownLimit;
 		float m_PeakOutput;

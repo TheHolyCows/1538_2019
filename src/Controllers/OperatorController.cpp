@@ -6,6 +6,7 @@ OperatorController::OperatorController(CowControlBoard *controlboard)
     m_CB(controlboard)
 {
 	m_ClimbLatch = new CowLib::CowLatch();
+	m_OffsetLatch = new CowLib::CowLatch();
 	m_ClimbSetHeight = false;
 }
 
@@ -46,16 +47,21 @@ void OperatorController::handle(CowRobot *bot)
                              m_CB->GetSteeringX(),
                              m_CB->GetSteeringButton(FAST_TURN));
       }
-    }
+   } 
    
    //Handle the climb 
-   if(m_CB->GetOperatorButton(8))
+    if(m_CB->GetSteeringButton(1))
+    {
+        bot->GetLeftJack()->SetPosition(-CONSTANT("JACK_DOWN_WEDGE"));
+        bot->GetRightJack()->SetPosition(CONSTANT("JACK_DOWN_WEDGE"));
+    }
+    else if(m_CB->GetOperatorButton(8))
     {
         bot->GetLeftJack()->SetPosition(-CONSTANT("JACK_UP"));
         bot->GetRightJack()->SetPosition(CONSTANT("JACK_UP"));
 	if(bot->GetLeftJack()->IsExtended())
 	{
-		bot->GetElevator()->SetPosition(0);
+		bot->GetElevator()->SetPosition(1);
 	}
     }
     else
@@ -81,6 +87,15 @@ void OperatorController::handle(CowRobot *bot)
 	{
 		m_ClimbLatch->ResetLatch();
 	}
+    }
+
+    if(m_OffsetLatch->Latch(m_CB->GetSteeringButton(8)))
+    {
+	bot->GetArm()->AddOffset(CONSTANT("ARM_OFFSET"));
+    }
+    else if(!m_CB->GetSteeringButton(8))
+    {
+	m_OffsetLatch->ResetLatch();
     }
 
     //We need to hand over cargo intake controls to the driver stick
